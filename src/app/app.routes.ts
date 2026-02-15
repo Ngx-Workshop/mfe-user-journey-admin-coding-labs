@@ -1,10 +1,7 @@
-import { Route } from '@angular/router';
-import App from './app';
+import { Routes as AppRoutes } from '@angular/router';
+import { CODING_LABS_ROUTES } from './features/coding-labs/coding-labs.routes';
 
-export const Routes: Route[] = [
-  { path: '', redirectTo: 'hello-world', pathMatch: 'full' },
-  {
-    path: 'hello-world',
-    component: App,
-  },
+export const Routes: AppRoutes = [
+  { path: '', pathMatch: 'full', redirectTo: 'coding-labs' },
+  ...CODING_LABS_ROUTES,
 ];

@@ -70,5 +70,31 @@ module.exports = withModuleFederationPlugin({
       strictVersion: true,
       requiredVersion: '^21.0.4',
     },
+
+    codemirror: {
+      singleton: true,
+      strictVersion: false,
+      requiredVersion: '^6.0.2',
+    },
+    '@codemirror/lang-javascript': {
+      singleton: true,
+      strictVersion: false,
+      requiredVersion: '^6.2.4',
+    },
+    '@codemirror/lang-json': {
+      singleton: true,
+      strictVersion: false,
+      requiredVersion: '^6.0.2',
+    },
+    '@codemirror/lang-markdown': {
+      singleton: true,
+      strictVersion: false,
+      requiredVersion: '^6.5.0',
+    },
+    '@codemirror/theme-one-dark': {
+      singleton: true,
+      strictVersion: false,
+      requiredVersion: '^6.1.3',
+    },
   },
 });
