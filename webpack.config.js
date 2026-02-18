@@ -96,5 +96,11 @@ module.exports = withModuleFederationPlugin({
       strictVersion: false,
       requiredVersion: '^6.1.3',
     },
+
+    '@tmdjr/ngx-shared-headers': {
+      singleton: true,
+      strictVersion: true,
+      requiredVersion: '21.0.5',
+    },
   },
 });

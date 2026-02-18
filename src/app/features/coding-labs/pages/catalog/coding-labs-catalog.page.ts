@@ -9,6 +9,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
@@ -17,6 +18,7 @@ import {
   MatSnackBarModule,
 } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
 import { finalize } from 'rxjs';
 import { CodingLabsApiClient } from '../../api/coding-labs-api-client.service';
 import { LabStatusChipComponent } from '../../components/lab-status-chip.component';
@@ -36,127 +38,168 @@ import { entityId, labStatus } from '../../utils/lab-entity.utils';
     MatSelectModule,
     MatSnackBarModule,
     LabStatusChipComponent,
+    NgxParticleHeader,
+    MatIconModule,
   ],
   template: `
+    <ngx-particle-header class="header">
+      <h1>Coding Labs</h1>
+    </ngx-particle-header>
+    <div class="action-bar">
+      <div class="flex-spacer"></div>
+      <button matButton="filled" [routerLink]="['/coding-labs/new']">
+        <mat-icon>note_add</mat-icon>Create Lab
+      </button>
+    </div>
+
     <section class="page">
-      <header class="header">
-        <h1>Coding Labs</h1>
-        <button mat-flat-button [routerLink]="['/coding-labs/new']">
-          Create Lab
-        </button>
-      </header>
+      <div class="wrapper">
+        <form class="filters" [formGroup]="filtersForm">
+          <div class="filter-row header">
+            <h3>Filters</h3>
+            <button matButton>
+              <mat-icon>clear_all</mat-icon> Clear All
+            </button>
+          </div>
 
-      <form class="filters" [formGroup]="filtersForm">
-        <mat-form-field appearance="outline">
-          <mat-label>Workshop ID</mat-label>
-          <input matInput formControlName="workshopId" />
-        </mat-form-field>
+          <div class="filter-row">
+            <mat-form-field appearance="outline" class="search-bar">
+              <mat-label>Search</mat-label>
+              <input matInput formControlName="q" />
+            </mat-form-field>
+          </div>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Status</mat-label>
-          <mat-select formControlName="status">
-            <mat-option value="">Any</mat-option>
-            <mat-option value="draft">draft</mat-option>
-            <mat-option value="published">published</mat-option>
-            <mat-option value="archived">archived</mat-option>
-          </mat-select>
-        </mat-form-field>
+          <div class="filter-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Workshop ID</mat-label>
+              <input matInput formControlName="workshopId" />
+            </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Tag</mat-label>
-          <input matInput formControlName="tag" />
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status">
+                <mat-option value="">Any</mat-option>
+                <mat-option value="draft">draft</mat-option>
+                <mat-option value="published">published</mat-option>
+                <mat-option value="archived">archived</mat-option>
+              </mat-select>
+            </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Search</mat-label>
-          <input matInput formControlName="q" />
-        </mat-form-field>
-      </form>
+            <mat-form-field appearance="outline">
+              <mat-label>Tag</mat-label>
+              <input matInput formControlName="tag" />
+            </mat-form-field>
+          </div>
+        </form>
 
-      @if (loading()) {
-      <div class="state">
-        <mat-spinner diameter="30"></mat-spinner>
+        @if (loading()) {
+        <div class="state">
+          <mat-spinner diameter="30"></mat-spinner>
+        </div>
+        } @else if (error()) {
+        <div class="state error">
+          <p>{{ error() }}</p>
+          <button mat-button type="button" (click)="reload()">
+            Retry
+          </button>
+        </div>
+        } @else if (labs().length === 0) {
+        <div class="state"><p>No labs found.</p></div>
+        } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th>Tags</th>
+                <th>Difficulty</th>
+                <th>Est. minutes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (lab of labs(); track trackLab(lab)) {
+              <tr>
+                <td>{{ lab.title || '(untitled)' }}</td>
+                <td>
+                  <ngx-lab-status-chip
+                    [status]="toStatus(lab)"
+                  ></ngx-lab-status-chip>
+                </td>
+                <td>{{ lab.updatedAt || '-' }}</td>
+                <td>{{ (lab.tags || []).join(', ') || '-' }}</td>
+                <td>{{ lab.difficulty || '-' }}</td>
+                <td>{{ lab.estimatedMinutes ?? '-' }}</td>
+                <td class="actions">
+                  <button
+                    mat-button
+                    type="button"
+                    [routerLink]="['../coding-labs', trackLab(lab)]"
+                  >
+                    Open
+                  </button>
+                  @if (toStatus(lab) !== 'archived') {
+                  <button
+                    mat-button
+                    type="button"
+                    (click)="archive(lab)"
+                  >
+                    Archive
+                  </button>
+                  }
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        }
       </div>
-      } @else if (error()) {
-      <div class="state error">
-        <p>{{ error() }}</p>
-        <button mat-button type="button" (click)="reload()">
-          Retry
-        </button>
-      </div>
-      } @else if (labs().length === 0) {
-      <div class="state"><p>No labs found.</p></div>
-      } @else {
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Status</th>
-              <th>Updated</th>
-              <th>Tags</th>
-              <th>Difficulty</th>
-              <th>Est. minutes</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (lab of labs(); track trackLab(lab)) {
-            <tr>
-              <td>{{ lab.title || '(untitled)' }}</td>
-              <td>
-                <ngx-lab-status-chip
-                  [status]="toStatus(lab)"
-                ></ngx-lab-status-chip>
-              </td>
-              <td>{{ lab.updatedAt || '-' }}</td>
-              <td>{{ (lab.tags || []).join(', ') || '-' }}</td>
-              <td>{{ lab.difficulty || '-' }}</td>
-              <td>{{ lab.estimatedMinutes ?? '-' }}</td>
-              <td class="actions">
-                <button
-                  mat-button
-                  type="button"
-                  [routerLink]="['../coding-labs', trackLab(lab)]"
-                >
-                  Open
-                </button>
-                @if (toStatus(lab) !== 'archived') {
-                <button
-                  mat-button
-                  type="button"
-                  (click)="archive(lab)"
-                >
-                  Archive
-                </button>
-                }
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      }
     </section>
   `,
   styles: [
     `
       .page {
-        padding: 20px;
-        display: grid;
-        gap: 16px;
-      }
-
-      .header {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        justify-content: center;
+      }
+      .wrapper {
+        padding: 1rem;
+        flex: 0 1 clamp(480px, 70vw, 1400px);
+        max-width: 100%;
+      }
+      .header h1 {
+        font-size: 1.85rem;
+        font-weight: 100;
+        margin: 1.7rem 1rem;
       }
 
       .filters {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
+        background: var(--mat-sys-surface-container-low);
+        padding: 1.5rem;
+        border-radius: var(
+          --mat-card-elevated-container-shape,
+          var(--mat-sys-corner-medium)
+        );
+        margin-bottom: 2rem;
+        h3 {
+          margin-top: 0;
+          margin-bottom: 1rem;
+        }
+      }
+
+      .filter-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        &.header {
+          justify-content: space-between;
+        }
       }
 
       .table-wrap {
@@ -187,6 +230,29 @@ import { entityId, labStatus } from '../../utils/lab-entity.utils';
 
       .state.error {
         color: #b3261e;
+      }
+
+      .search-bar {
+        width: 100%;
+        max-width: 600px;
+      }
+
+      .action-bar {
+        position: sticky;
+        top: 56px;
+        height: 56px;
+        z-index: 5;
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        background: var(--mat-sys-primary);
+        align-items: center;
+        a,
+        button {
+          color: var(--mat-sys-on-primary);
+          background: var(--mat-sys-primary);
+          margin: 0 12px;
+        }
       }
 
       @media (max-width: 960px) {

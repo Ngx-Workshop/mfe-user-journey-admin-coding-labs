@@ -37,6 +37,7 @@
     "@fsegurai/codemirror-theme-synthwave-84": "^6.0.0",
     "@tmdjr/coding-labs-contracts": "0.0.3",
     "@tmdjr/ngx-user-metadata": "^21.0.4",
+    "@tmdjr/ngx-shared-headers": "21.0.5",
     "@tmdjr/seed-service-nestjs-contracts": "0.0.7",
     "@types/jasmine": "~5.1.0",
     "codemirror": "^6.0.2",

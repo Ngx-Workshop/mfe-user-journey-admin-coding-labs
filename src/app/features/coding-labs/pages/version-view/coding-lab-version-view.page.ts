@@ -102,7 +102,6 @@ import { LabVersionEntity } from '../../models/coding-labs.models';
       }
 
       pre {
-        background: #f6f8fb;
         border-radius: 8px;
         padding: 12px;
         overflow: auto;
