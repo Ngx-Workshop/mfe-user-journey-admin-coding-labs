@@ -1,4 +1,5 @@
 import {
+  VerificationDto,
   ComparatorDto,
   CreateDraftVersionDto,
   CreateLabDto,
@@ -11,9 +12,10 @@ import {
   ReferenceSolutionDto,
   UpdateDraftVersionDto,
   UpdateLabDto,
-} from '@tmdjr/coding-labs-contracts';
+} from '../../../contracts/coding-labs';
 
 export type {
+  VerificationDto,
   ComparatorDto,
   CreateDraftVersionDto,
   CreateLabDto,

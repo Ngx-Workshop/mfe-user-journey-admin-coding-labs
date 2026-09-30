@@ -19,31 +19,34 @@ export function slugify(input: string): string {
 
 export function tryParseJson(value: string): {
   ok: boolean;
-  parsed?: Record<string, any>;
+  parsed?: any;
 } {
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return { ok: true, parsed: {} };
-  }
-
+  if (!value.trim()) return { ok: false };
   try {
-    const parsed = JSON.parse(trimmed);
-    if (parsed && typeof parsed === 'object') {
-      return { ok: true, parsed: parsed as Record<string, any> };
-    }
-    return { ok: false };
+    return { ok: true, parsed: JSON.parse(value) };
   } catch {
     return { ok: false };
   }
 }
 
 export function formatJson(value: unknown): string {
-  if (value === undefined) return '{}';
-  try {
-    return JSON.stringify(value ?? {}, null, 2);
-  } catch {
-    return '{}';
-  }
+  return value === undefined ? '' : JSON.stringify(value, null, 2);
+}
+
+export function apiError(
+  error: unknown,
+  fallback = 'The request failed. Try again.'
+): string {
+  const e = error as {
+    status?: number;
+    error?: { message?: string | string[] };
+  };
+  if (e?.status === 0)
+    return 'Cannot reach the coding labs service. Check that it is running locally.';
+  const message = e?.error?.message;
+  return Array.isArray(message)
+    ? message.join(' · ')
+    : message || fallback;
 }
 
 export function normalizeComparator(
@@ -58,13 +61,15 @@ export function normalizeComparator(
   };
 }
 
-export function ensureIoTestcase(test: LabTestCaseDto): LabTestCaseDto {
+export function ensureIoTestcase(
+  test: LabTestCaseDto
+): LabTestCaseDto {
   return {
     ...test,
     kind: 'io',
     name: test.name || 'case',
-    input: test.input ?? {},
-    expected: test.expected ?? {},
+    input: test.input,
+    expected: test.expected,
     comparator: normalizeComparator(test.comparator),
   };
 }

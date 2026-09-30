@@ -1,5 +1,7 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
   Component,
   EventEmitter,
   Input,
@@ -87,48 +89,53 @@ interface IoTestcaseJsonError {
         </mat-form-field>
 
         @if (comparator.kind === 'numberTolerance') {
-        <mat-form-field appearance="outline">
-          <mat-label>Tolerance</mat-label>
-          <input
-            matInput
-            type="number"
-            [ngModel]="comparator.tolerance ?? 0"
-            (ngModelChange)="updateComparator('tolerance', +$event)"
-            [disabled]="disabled"
-          />
-        </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Tolerance</mat-label>
+            <input
+              matInput
+              type="number"
+              [ngModel]="comparator.tolerance ?? 0"
+              (ngModelChange)="updateComparator('tolerance', +$event)"
+              [disabled]="disabled"
+            />
+          </mat-form-field>
         }
 
-        <mat-checkbox
-          [ngModel]="comparator.normalizeWhitespace ?? false"
-          (ngModelChange)="
-            updateComparator('normalizeWhitespace', $event)
-          "
-          [disabled]="disabled"
-        >
-          Normalize whitespace
-        </mat-checkbox>
+        @if (comparator.kind === 'stringNormalized') {
+          <mat-checkbox
+            [ngModel]="comparator.normalizeWhitespace ?? false"
+            (ngModelChange)="
+              updateComparator('normalizeWhitespace', $event)
+            "
+            [disabled]="disabled"
+          >
+            Normalize whitespace
+          </mat-checkbox>
 
-        <mat-checkbox
-          [ngModel]="comparator.ignoreCase ?? false"
-          (ngModelChange)="updateComparator('ignoreCase', $event)"
-          [disabled]="disabled"
-        >
-          Ignore case
-        </mat-checkbox>
+          <mat-checkbox
+            [ngModel]="comparator.ignoreCase ?? false"
+            (ngModelChange)="updateComparator('ignoreCase', $event)"
+            [disabled]="disabled"
+          >
+            Ignore case
+          </mat-checkbox>
+        }
       </div>
 
       <div class="json-grid">
         <div>
-          <label class="label">Input JSON</label>
+          <label class="label"
+            >Input JSON — passed as one argument</label
+          >
           <ngx-codemirror-editor
             [language]="'json'"
             [readOnly]="disabled"
             [value]="inputJson"
+            label="Input JSON"
             (valueChange)="onInputJsonChange($event)"
           ></ngx-codemirror-editor>
           @if (jsonErrors.inputJson) {
-          <p class="error">{{ jsonErrors.inputJson }}</p>
+            <p class="error">{{ jsonErrors.inputJson }}</p>
           }
         </div>
 
@@ -138,24 +145,25 @@ interface IoTestcaseJsonError {
             [language]="'json'"
             [readOnly]="disabled"
             [value]="expectedJson"
+            label="Expected JSON"
             (valueChange)="onExpectedJsonChange($event)"
           ></ngx-codemirror-editor>
           @if (jsonErrors.expectedJson) {
-          <p class="error">{{ jsonErrors.expectedJson }}</p>
+            <p class="error">{{ jsonErrors.expectedJson }}</p>
           }
         </div>
       </div>
 
       @if (showUnitTestCode) {
-      <div>
-        <label class="label">Optional Unit Test Code</label>
-        <ngx-codemirror-editor
-          [language]="language"
-          [readOnly]="disabled"
-          [value]="value.testCode ?? ''"
-          (valueChange)="update('testCode', $event)"
-        ></ngx-codemirror-editor>
-      </div>
+        <div>
+          <label class="label">Optional Unit Test Code</label>
+          <ngx-codemirror-editor
+            [language]="language"
+            [readOnly]="disabled"
+            [value]="value.testCode ?? ''"
+            (valueChange)="update('testCode', $event)"
+          ></ngx-codemirror-editor>
+        </div>
       }
     </div>
   `,
@@ -226,7 +234,7 @@ export class IoTestcaseEditorComponent
   implements ControlValueAccessor
 {
   @Input() language: 'typescript' | 'javascript' = 'typescript';
-  @Input() showUnitTestCode = true;
+  @Input() showUnitTestCode = false;
   @Output() readonly remove = new EventEmitter<void>();
   @Output() readonly jsonErrorsChange =
     new EventEmitter<IoTestcaseJsonError>();
@@ -245,6 +253,7 @@ export class IoTestcaseEditorComponent
 
   inputJson = '{}';
   expectedJson = '{}';
+  private readonly cdr = inject(ChangeDetectorRef);
   disabled = false;
   jsonErrors: IoTestcaseJsonError = {};
 
@@ -257,10 +266,11 @@ export class IoTestcaseEditorComponent
 
   writeValue(value: LabTestCaseDto | null): void {
     this.value = {
+      _id: value?._id,
       kind: 'io',
       name: value?.name ?? 'sample',
-      input: value?.input ?? {},
-      expected: value?.expected ?? {},
+      input: value?.input,
+      expected: value?.expected,
       comparator: normalizeComparator(value?.comparator),
       framework: value?.framework,
       testCode: value?.testCode,
@@ -280,6 +290,7 @@ export class IoTestcaseEditorComponent
 
   setDisabledState(isDisabled: boolean): void {
     this.disabled = isDisabled;
+    this.cdr.markForCheck();
   }
 
   onNameChange(name: string): void {
@@ -326,10 +337,10 @@ export class IoTestcaseEditorComponent
     this.jsonErrors = {
       inputJson: inputParsed.ok
         ? undefined
-        : 'Input must be valid JSON object',
+        : 'Enter valid JSON: an object, array, string, number, boolean or null',
       expectedJson: expectedParsed.ok
         ? undefined
-        : 'Expected must be valid JSON object',
+        : 'Enter a valid JSON expected result',
     };
 
     this.jsonErrorsChange.emit(this.jsonErrors);

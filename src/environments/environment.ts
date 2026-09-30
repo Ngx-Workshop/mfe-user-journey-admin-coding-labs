@@ -1,5 +1,5 @@
 export const environment = {
-  production: false,
+  production: true,
   codingLabsApiBaseUrl: '/api/coding-labs',
   currentActorId: 'admin-ui',
 };

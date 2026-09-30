@@ -47,7 +47,7 @@ import { entityId, labStatus } from '../../utils/lab-entity.utils';
     </ngx-particle-header>
     <div class="action-bar">
       <div class="flex-spacer"></div>
-      <button matButton="filled" [routerLink]="['/coding-labs/new']">
+      <button matButton="filled" [routerLink]="['new']">
         <mat-icon>note_add</mat-icon>Create Lab
       </button>
     </div>
@@ -57,7 +57,11 @@ import { entityId, labStatus } from '../../utils/lab-entity.utils';
         <form class="filters" [formGroup]="filtersForm">
           <div class="filter-row header">
             <h3>Filters</h3>
-            <button matButton>
+            <button
+              matButton
+              type="button"
+              (click)="filtersForm.reset()"
+            >
               <mat-icon>clear_all</mat-icon> Clear All
             </button>
           </div>
@@ -93,68 +97,68 @@ import { entityId, labStatus } from '../../utils/lab-entity.utils';
         </form>
 
         @if (loading()) {
-        <div class="state">
-          <mat-spinner diameter="30"></mat-spinner>
-        </div>
+          <div class="state">
+            <mat-spinner diameter="30"></mat-spinner>
+          </div>
         } @else if (error()) {
-        <div class="state error">
-          <p>{{ error() }}</p>
-          <button mat-button type="button" (click)="reload()">
-            Retry
-          </button>
-        </div>
+          <div class="state error">
+            <p>{{ error() }}</p>
+            <button mat-button type="button" (click)="reload()">
+              Retry
+            </button>
+          </div>
         } @else if (labs().length === 0) {
-        <div class="state"><p>No labs found.</p></div>
+          <div class="state"><p>No labs found.</p></div>
         } @else {
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Status</th>
-                <th>Updated</th>
-                <th>Tags</th>
-                <th>Difficulty</th>
-                <th>Est. minutes</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (lab of labs(); track trackLab(lab)) {
-              <tr>
-                <td>{{ lab.title || '(untitled)' }}</td>
-                <td>
-                  <ngx-lab-status-chip
-                    [status]="toStatus(lab)"
-                  ></ngx-lab-status-chip>
-                </td>
-                <td>{{ lab.updatedAt || '-' }}</td>
-                <td>{{ (lab.tags || []).join(', ') || '-' }}</td>
-                <td>{{ lab.difficulty || '-' }}</td>
-                <td>{{ lab.estimatedMinutes ?? '-' }}</td>
-                <td class="actions">
-                  <button
-                    mat-button
-                    type="button"
-                    [routerLink]="['../coding-labs', trackLab(lab)]"
-                  >
-                    Open
-                  </button>
-                  @if (toStatus(lab) !== 'archived') {
-                  <button
-                    mat-button
-                    type="button"
-                    (click)="archive(lab)"
-                  >
-                    Archive
-                  </button>
-                  }
-                </td>
-              </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Updated</th>
+                  <th>Tags</th>
+                  <th>Difficulty</th>
+                  <th>Est. minutes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (lab of labs(); track trackLab(lab)) {
+                  <tr>
+                    <td>{{ lab.title || '(untitled)' }}</td>
+                    <td>
+                      <ngx-lab-status-chip
+                        [status]="toStatus(lab)"
+                      ></ngx-lab-status-chip>
+                    </td>
+                    <td>{{ lab.updatedAt || '-' }}</td>
+                    <td>{{ (lab.tags || []).join(', ') || '-' }}</td>
+                    <td>{{ lab.difficulty || '-' }}</td>
+                    <td>{{ lab.estimatedMinutes ?? '-' }}</td>
+                    <td class="actions">
+                      <button
+                        mat-button
+                        type="button"
+                        [routerLink]="[trackLab(lab)]"
+                      >
+                        Open
+                      </button>
+                      @if (toStatus(lab) !== 'archived') {
+                        <button
+                          mat-button
+                          type="button"
+                          (click)="archive(lab)"
+                        >
+                          Archive
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
       </div>
     </section>
@@ -308,10 +312,9 @@ export class CodingLabsCatalogPage {
     this.filtersForm.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-        this.router.navigate(['../'], {
+        this.router.navigate([], {
           relativeTo: this.route,
           queryParams: this.toQueryParams(),
-          queryParamsHandling: 'merge',
         });
       });
   }

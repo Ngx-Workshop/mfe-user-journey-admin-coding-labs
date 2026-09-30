@@ -21,8 +21,6 @@ import {
   history,
   historyKeymap,
 } from '@codemirror/commands';
-import { css } from '@codemirror/lang-css';
-import { html } from '@codemirror/lang-html';
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { markdown } from '@codemirror/lang-markdown';
@@ -46,9 +44,7 @@ export type CodeMirrorLanguage =
   | 'typescript'
   | 'javascript'
   | 'json'
-  | 'markdown'
-  | 'css'
-  | 'html';
+  | 'markdown';
 
 @Component({
   selector: 'ngx-codemirror-editor',
@@ -88,13 +84,10 @@ export type CodeMirrorLanguage =
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodemirrorEditorComponent
-  implements
-    ControlValueAccessor,
-    AfterViewInit,
-    OnChanges,
-    OnDestroy
+  implements ControlValueAccessor, AfterViewInit, OnChanges, OnDestroy
 {
   @Input() value = '';
+  @Input() label = 'Code editor';
   @Output() readonly valueChange = new EventEmitter<string>();
   @Input() language: CodeMirrorLanguage = 'markdown';
   @Input() readOnly = false;
@@ -127,6 +120,7 @@ export class CodemirrorEditorComponent
     );
 
     const extensions: Extension[] = [
+      EditorView.contentAttributes.of({ 'aria-label': this.label }),
       basicSetup,
       lineNumbers(),
       bracketMatching(),
@@ -251,10 +245,6 @@ export class CodemirrorEditorComponent
         return json();
       case 'markdown':
         return markdown();
-      case 'html':
-        return html();
-      case 'css':
-        return css();
       default:
         return javascript({ typescript: true });
     }

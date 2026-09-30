@@ -1,9 +1,5 @@
-import {
-  HttpClient,
-  HttpParams,
-} from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
 import {
   CODING_LABS_ACTOR_ID,
   CODING_LABS_API_BASE_URL,
@@ -19,6 +15,7 @@ import {
   PublishVersionDto,
   UpdateDraftVersionDto,
   UpdateLabDto,
+  VerificationDto,
 } from '../models/coding-labs.models';
 
 @Injectable({ providedIn: 'root' })
@@ -26,110 +23,103 @@ export class CodingLabsApiClient {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(CODING_LABS_API_BASE_URL);
   private readonly actorId = inject(CODING_LABS_ACTOR_ID);
+  private readonly options = { withCredentials: true };
 
-  listLabs(query: ListLabsQuery = {}): Observable<LabEntity[]> {
-    return this.http.get<LabEntity[]>(`${this.baseUrl}/labs`, {
+  listLabs(query: ListLabsQuery = {}) {
+    return this.http.get<LabEntity[]>(this.baseUrl + '/labs', {
+      ...this.options,
       params: buildHttpParams(query),
     });
   }
-
-  getLab(labId: string): Observable<LabEntity> {
-    return this.http.get<LabEntity>(`${this.baseUrl}/labs/${labId}`);
+  getLab(id: string) {
+    return this.http.get<LabEntity>(
+      this.baseUrl + '/labs/' + id,
+      this.options
+    );
   }
-
-  createLab(dto: CreateLabDto): Observable<LabEntity> {
-    return this.http.post<LabEntity>(`${this.baseUrl}/labs`, dto);
+  createLab(dto: CreateLabDto) {
+    return this.http.post<LabEntity>(
+      this.baseUrl + '/labs',
+      dto,
+      this.options
+    );
   }
-
-  updateLab(
-    labId: string,
-    dto: UpdateLabDto
-  ): Observable<LabEntity> {
+  updateLab(id: string, dto: UpdateLabDto) {
     return this.http.patch<LabEntity>(
-      `${this.baseUrl}/labs/${labId}`,
-      dto
+      this.baseUrl + '/labs/' + id,
+      dto,
+      this.options
     );
   }
-
-  archiveLab(labId: string, archivedBy = this.actorId): Observable<void> {
-    const params = new HttpParams().set('archivedBy', archivedBy);
-    return this.http.delete<void>(`${this.baseUrl}/labs/${labId}`, {
-      params,
+  archiveLab(id: string, archivedBy = this.actorId) {
+    return this.http.delete<void>(this.baseUrl + '/labs/' + id, {
+      ...this.options,
+      params: new HttpParams().set('archivedBy', archivedBy),
     });
   }
-
-  listVersions(labId: string): Observable<LabVersionEntity[]> {
+  listVersions(id: string) {
     return this.http.get<LabVersionEntity[]>(
-      `${this.baseUrl}/labs/${labId}/versions`
+      this.baseUrl + '/labs/' + id + '/versions',
+      this.options
     );
   }
-
-  getVersion(
-    labId: string,
-    versionId: string
-  ): Observable<LabVersionEntity> {
+  getVersion(id: string, version: string) {
     return this.http.get<LabVersionEntity>(
-      `${this.baseUrl}/labs/${labId}/versions/${versionId}`
+      this.versionUrl(id, version),
+      this.options
     );
   }
-
-  createDraftVersion(
-    labId: string,
-    dto: CreateDraftVersionDto
-  ): Observable<LabVersionEntity> {
+  createDraftVersion(id: string, dto: CreateDraftVersionDto) {
     return this.http.post<LabVersionEntity>(
-      `${this.baseUrl}/labs/${labId}/versions/draft`,
-      dto
+      this.versionUrl(id, 'draft'),
+      dto,
+      this.options
     );
   }
-
   updateDraftVersion(
-    labId: string,
-    versionId: string,
+    id: string,
+    version: string,
     dto: UpdateDraftVersionDto
-  ): Observable<LabVersionEntity> {
+  ) {
     return this.http.patch<LabVersionEntity>(
-      `${this.baseUrl}/labs/${labId}/versions/${versionId}`,
-      dto
+      this.versionUrl(id, version),
+      dto,
+      this.options
     );
   }
-
+  verifyVersion(id: string, version: string) {
+    return this.http.post<VerificationDto>(
+      this.versionUrl(id, version) + '/verify',
+      {},
+      this.options
+    );
+  }
   publishVersion(
-    labId: string,
-    versionId: string,
+    id: string,
+    version: string,
     dto: PublishVersionDto
-  ): Observable<LabVersionEntity> {
+  ) {
     return this.http.post<LabVersionEntity>(
-      `${this.baseUrl}/labs/${labId}/versions/${versionId}/publish`,
-      dto
+      this.versionUrl(id, version) + '/publish',
+      dto,
+      this.options
     );
   }
-
-  listEmbeds(query: ListEmbedsQuery = {}): Observable<LabEmbedEntity[]> {
-    return this.http.get<LabEmbedEntity[]>(`${this.baseUrl}/embeds`, {
+  listEmbeds(query: ListEmbedsQuery = {}) {
+    return this.http.get<LabEmbedEntity[]>(this.baseUrl + '/embeds', {
+      ...this.options,
       params: buildHttpParams(query),
     });
+  }
+  private versionUrl(id: string, version: string) {
+    return this.baseUrl + '/labs/' + id + '/versions/' + version;
   }
 }
-
-function buildHttpParams(
-  value: object
-): HttpParams {
+function buildHttpParams(value: object): HttpParams {
   let params = new HttpParams();
-
-  for (const [key, current] of Object.entries(
-    value as Record<string, unknown>
-  )) {
-    if (
-      current === null ||
-      current === undefined ||
-      current === ''
-    ) {
-      continue;
-    }
-
-    params = params.set(key, String(current));
+  for (const [key, current] of Object.entries(value)) {
+    if (current !== null && current !== undefined && current !== '')
+      params = params.set(key, String(current));
   }
-
   return params;
 }

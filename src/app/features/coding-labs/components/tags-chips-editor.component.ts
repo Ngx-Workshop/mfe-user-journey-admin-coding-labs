@@ -1,5 +1,7 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
   Component,
   Input,
   forwardRef,
@@ -10,7 +12,10 @@ import {
   NG_VALUE_ACCESSOR,
 } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
+import {
+  MatChipInputEvent,
+  MatChipsModule,
+} from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
@@ -69,6 +74,7 @@ export class TagsChipsEditorComponent
   @Input() placeholder = 'Add tag';
 
   tags: string[] = [];
+  private readonly cdr = inject(ChangeDetectorRef);
   disabled = false;
 
   private onChange: (value: string[]) => void = () => {};
@@ -88,6 +94,7 @@ export class TagsChipsEditorComponent
 
   setDisabledState(isDisabled: boolean): void {
     this.disabled = isDisabled;
+    this.cdr.markForCheck();
   }
 
   addTagFromEvent(event: MatChipInputEvent): void {

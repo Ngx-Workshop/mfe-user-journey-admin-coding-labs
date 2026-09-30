@@ -1,5 +1,7 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
   Component,
   forwardRef,
 } from '@angular/core';
@@ -36,18 +38,38 @@ import { MatInputModule } from '@angular/material/input';
               [disabled]="disabled"
             />
           </mat-form-field>
-          <button mat-icon-button type="button" (click)="move($index, -1)" [disabled]="disabled || $index === 0">
+          <button
+            mat-icon-button
+            type="button"
+            (click)="move($index, -1)"
+            [disabled]="disabled || $index === 0"
+          >
             <mat-icon>arrow_upward</mat-icon>
           </button>
-          <button mat-icon-button type="button" (click)="move($index, 1)" [disabled]="disabled || $index === hints.length - 1">
+          <button
+            mat-icon-button
+            type="button"
+            (click)="move($index, 1)"
+            [disabled]="disabled || $index === hints.length - 1"
+          >
             <mat-icon>arrow_downward</mat-icon>
           </button>
-          <button mat-icon-button type="button" (click)="removeHint($index)" [disabled]="disabled">
+          <button
+            mat-icon-button
+            type="button"
+            (click)="removeHint($index)"
+            [disabled]="disabled"
+          >
             <mat-icon>delete</mat-icon>
           </button>
         </div>
       }
-      <button mat-stroked-button type="button" (click)="addHint()" [disabled]="disabled">
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="addHint()"
+        [disabled]="disabled"
+      >
         <mat-icon>add</mat-icon>
         Add Hint
       </button>
@@ -83,6 +105,7 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class HintsEditorComponent implements ControlValueAccessor {
   hints: string[] = [];
+  private readonly cdr = inject(ChangeDetectorRef);
   disabled = false;
 
   private onChange: (value: string[]) => void = () => {};
@@ -102,6 +125,7 @@ export class HintsEditorComponent implements ControlValueAccessor {
 
   setDisabledState(isDisabled: boolean): void {
     this.disabled = isDisabled;
+    this.cdr.markForCheck();
   }
 
   addHint(): void {
@@ -134,7 +158,9 @@ export class HintsEditorComponent implements ControlValueAccessor {
   }
 
   private emit(): void {
-    this.onChange(this.hints.map((hint) => hint.trim()).filter(Boolean));
+    this.onChange(
+      this.hints.map((hint) => hint.trim()).filter(Boolean)
+    );
     this.onTouched();
   }
 }

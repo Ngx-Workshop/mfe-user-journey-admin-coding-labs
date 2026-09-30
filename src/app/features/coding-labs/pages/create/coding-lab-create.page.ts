@@ -25,7 +25,10 @@ import { CODING_LABS_ACTOR_ID } from '../../../../config/coding-labs.config';
 import { CodingLabsApiClient } from '../../api/coding-labs-api-client.service';
 import { TagsChipsEditorComponent } from '../../components/tags-chips-editor.component';
 import { CreateLabDto } from '../../models/coding-labs.models';
-import { slugify } from '../../utils/coding-labs-form.utils';
+import {
+  apiError,
+  slugify,
+} from '../../utils/coding-labs-form.utils';
 import { entityId } from '../../utils/lab-entity.utils';
 
 @Component({
@@ -45,25 +48,28 @@ import { entityId } from '../../utils/lab-entity.utils';
       <h1>Create Coding Lab</h1>
 
       @if (error()) {
-      <p class="error">{{ error() }}</p>
+        <p class="error">{{ error() }}</p>
       }
 
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <mat-form-field appearance="outline">
           <mat-label>Workshop ID</mat-label>
           <input matInput formControlName="workshopId" />
-          @if (form.controls.workshopId.invalid &&
-          form.controls.workshopId.touched) {
-          <mat-error>Workshop ID is required</mat-error>
+          @if (
+            form.controls.workshopId.invalid &&
+            form.controls.workshopId.touched
+          ) {
+            <mat-error>Workshop ID is required</mat-error>
           }
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Title</mat-label>
           <input matInput formControlName="title" />
-          @if (form.controls.title.invalid &&
-          form.controls.title.touched) {
-          <mat-error>Title is required</mat-error>
+          @if (
+            form.controls.title.invalid && form.controls.title.touched
+          ) {
+            <mat-error>Title is required</mat-error>
           }
         </mat-form-field>
 
@@ -74,9 +80,10 @@ import { entityId } from '../../utils/lab-entity.utils';
             formControlName="slug"
             (input)="onSlugInput()"
           />
-          @if (form.controls.slug.invalid &&
-          form.controls.slug.touched) {
-          <mat-error>Slug is required</mat-error>
+          @if (
+            form.controls.slug.invalid && form.controls.slug.touched
+          ) {
+            <mat-error>Slug is required</mat-error>
           }
         </mat-form-field>
 
@@ -173,7 +180,10 @@ export class CodingLabCreatePage {
       nonNullable: true,
     }),
     slug: this.fb.control('', {
-      validators: [Validators.required],
+      validators: [
+        Validators.required,
+        Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+      ],
       nonNullable: true,
     }),
     tags: this.fb.control<string[]>([], { nonNullable: true }),
@@ -183,7 +193,10 @@ export class CodingLabCreatePage {
         nonNullable: true,
       }
     ),
-    estimatedMinutes: this.fb.control<number | null>(null),
+    estimatedMinutes: this.fb.control<number | null>(null, [
+      Validators.min(1),
+      Validators.max(600),
+    ]),
   });
 
   private slugEdited = false;
@@ -226,15 +239,6 @@ export class CodingLabCreatePage {
     this.api
       .createLab(dto)
       .pipe(
-        switchMap((lab) => {
-          const id = entityId(lab);
-          return this.api
-            .createDraftVersion(id, {
-              createdBy: this.actorId,
-              language: 'typescript',
-            })
-            .pipe(map(() => lab));
-        }),
         finalize(() => this.saving.set(false)),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -244,12 +248,12 @@ export class CodingLabCreatePage {
           this.snackBar.open('Lab created', 'Dismiss', {
             duration: 2200,
           });
-          this.router.navigate(['../coding-labs', id, 'editor'], {
+          this.router.navigate(['..', id, 'editor'], {
             relativeTo: this.route,
           });
         },
-        error: () => {
-          this.error.set('Failed to create lab.');
+        error: (error) => {
+          this.error.set(apiError(error, 'Failed to create lab.'));
         },
       });
   }

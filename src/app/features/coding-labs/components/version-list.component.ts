@@ -31,21 +31,33 @@ import { entityId } from '../utils/lab-entity.utils';
         <tbody>
           @for (version of versions; track trackVersion(version)) {
             <tr>
-              <td>v{{ version.versionNumber ?? '?' }}</td>
+              <td>v{{ version.versionNumber }}</td>
               <td>{{ version.isDraft ? 'Yes' : 'No' }}</td>
               <td>{{ version.publishedAt || '-' }}</td>
               <td>{{ version.createdAt || '-' }}</td>
               <td class="actions">
-                <button mat-button type="button" (click)="view.emit(version)">
+                <button
+                  mat-button
+                  type="button"
+                  (click)="view.emit(version)"
+                >
                   <mat-icon>visibility</mat-icon>
                   View
                 </button>
                 @if (version.isDraft) {
-                  <button mat-button type="button" (click)="editDraft.emit(version)">
+                  <button
+                    mat-button
+                    type="button"
+                    (click)="editDraft.emit(version)"
+                  >
                     <mat-icon>edit</mat-icon>
                     Edit
                   </button>
-                  <button mat-flat-button type="button" (click)="publish.emit(version)">
+                  <button
+                    mat-flat-button
+                    type="button"
+                    (click)="publish.emit(version)"
+                  >
                     <mat-icon>publish</mat-icon>
                     Publish
                   </button>

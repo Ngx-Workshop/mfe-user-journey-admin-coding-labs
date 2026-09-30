@@ -23,7 +23,9 @@ export function stringOrEmpty(value: unknown): string {
 
 export function strArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === 'string');
+  return value.filter(
+    (item): item is string => typeof item === 'string'
+  );
 }
 
 export function safeComparator(
@@ -38,9 +40,7 @@ export function safeComparator(
   };
 }
 
-export function createDefaultIoTest(
-  name = 'sample'
-): LabTestCaseDto {
+export function createDefaultIoTest(name = 'sample'): LabTestCaseDto {
   return {
     name,
     kind: 'io',
@@ -71,8 +71,8 @@ export function selectDraftVersion(
   const draftId = lab.currentDraftVersionId;
   if (draftId) {
     const matched = versions.find((v) => entityId(v) === draftId);
-    if (matched) return matched;
+    if (matched?.isDraft) return matched;
   }
 
-  return versions.find((version) => Boolean(version.isDraft));
+  return undefined;
 }

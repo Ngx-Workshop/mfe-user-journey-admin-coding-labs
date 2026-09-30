@@ -1,3 +1,4 @@
+import { JsonPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -34,6 +35,7 @@ import {
   selector: 'ngx-coding-lab-overview-page',
   standalone: true,
   imports: [
+    JsonPipe,
     MatButtonModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
@@ -43,64 +45,96 @@ import {
   template: `
     <section class="page">
       @if (loading()) {
-      <div class="state">
-        <mat-spinner diameter="30"></mat-spinner>
-      </div>
-      } @else if (error()) {
-      <div class="state error">
-        <p>{{ error() }}</p>
-        <button mat-button type="button" (click)="load()">
-          Retry
-        </button>
-      </div>
-      } @else if (lab()) {
-      <header class="header">
-        <div>
-          <h1>{{ lab()?.title || '(untitled)' }}</h1>
-          <p class="meta">Slug: {{ lab()?.slug || '-' }}</p>
-          <p class="meta">Workshop: {{ lab()?.workshopId || '-' }}</p>
+        <div class="state">
+          <mat-spinner diameter="30"></mat-spinner>
         </div>
-        <ngx-lab-status-chip
-          [status]="status()"
-        ></ngx-lab-status-chip>
-      </header>
+      } @else if (error()) {
+        <div class="state error">
+          <p>{{ error() }}</p>
+          <button mat-button type="button" (click)="load()">
+            Retry
+          </button>
+        </div>
+      } @else if (lab()) {
+        <header class="header">
+          <div>
+            <h1>{{ lab()?.title || '(untitled)' }}</h1>
+            <p class="meta">Slug: {{ lab()?.slug || '-' }}</p>
+            <p class="meta">
+              Workshop: {{ lab()?.workshopId || '-' }}
+            </p>
+          </div>
+          <ngx-lab-status-chip
+            [status]="status()"
+          ></ngx-lab-status-chip>
+        </header>
 
-      <div class="actions">
-        <button mat-flat-button type="button" (click)="openEditor()">
-          Open Editor
-        </button>
-        <button mat-button type="button" (click)="createNewDraft()">
-          Create New Draft
-        </button>
-        @if (status() !== 'archived') {
-        <button mat-button type="button" (click)="archiveLab()">
-          Archive Lab
-        </button>
+        <div class="actions">
+          <button
+            mat-flat-button
+            type="button"
+            (click)="openEditor()"
+            [disabled]="status() === 'archived'"
+          >
+            Open Editor
+          </button>
+          <button
+            mat-button
+            type="button"
+            (click)="createNewDraft()"
+            [disabled]="status() === 'archived'"
+          >
+            Create New Draft
+          </button>
+          @if (status() !== 'archived') {
+            <button mat-button type="button" (click)="archiveLab()">
+              Archive Lab
+            </button>
+          }
+        </div>
+
+        <section class="meta-grid">
+          <p>
+            <strong>Difficulty:</strong>
+            {{ lab()?.difficulty || '-' }}
+          </p>
+          <p>
+            <strong>Estimated Minutes:</strong>
+            {{ lab()?.estimatedMinutes ?? '-' }}
+          </p>
+          <p>
+            <strong>Tags:</strong>
+            {{ (lab()?.tags || []).join(', ') || '-' }}
+          </p>
+          <p>
+            <strong>Updated:</strong> {{ lab()?.updatedAt || '-' }}
+          </p>
+        </section>
+
+        @if (lab()?.latestPublishedVersionId) {
+          <section class="integration">
+            <h2>Workshop embed reference</h2>
+            <p>
+              Use this version-pinned reference in a workshop
+              document. Learner content is available through the
+              published-labs API.
+            </p>
+            <pre>{{
+              {
+                type: 'handsOnLab',
+                labId: labId(),
+                pinnedVersionId: lab()?.latestPublishedVersionId,
+              } | json
+            }}</pre>
+          </section>
         }
-      </div>
-
-      <section class="meta-grid">
-        <p>
-          <strong>Difficulty:</strong> {{ lab()?.difficulty || '-' }}
-        </p>
-        <p>
-          <strong>Estimated Minutes:</strong>
-          {{ lab()?.estimatedMinutes ?? '-' }}
-        </p>
-        <p>
-          <strong>Tags:</strong>
-          {{ (lab()?.tags || []).join(', ') || '-' }}
-        </p>
-        <p><strong>Updated:</strong> {{ lab()?.updatedAt || '-' }}</p>
-      </section>
-
-      <h2>Versions</h2>
-      <ngx-version-list
-        [versions]="versions()"
-        (view)="viewVersion($event)"
-        (editDraft)="editDraft($event)"
-        (publish)="publishDraft($event)"
-      ></ngx-version-list>
+        <h2>Versions</h2>
+        <ngx-version-list
+          [versions]="versions()"
+          (view)="viewVersion($event)"
+          (editDraft)="editDraft($event)"
+          (publish)="publishDraft($event)"
+        ></ngx-version-list>
       }
     </section>
   `,
@@ -140,6 +174,12 @@ import {
         flex-wrap: wrap;
       }
 
+      .integration pre {
+        overflow: auto;
+        padding: 16px;
+        border-radius: 8px;
+        background: var(--mat-sys-surface-container-low);
+      }
       .meta-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -249,7 +289,7 @@ export class CodingLabOverviewPage {
           this.snackBar.open('Lab archived', 'Dismiss', {
             duration: 2400,
           });
-          this.router.navigate(['../coding-labs'], {
+          this.router.navigate(['..'], {
             relativeTo: this.route,
           });
         },
@@ -274,28 +314,7 @@ export class CodingLabOverviewPage {
   }
 
   publishDraft(version: LabVersionEntity): void {
-    const versionId = entityId(version);
-    this.api
-      .publishVersion(this.labId(), versionId, {
-        publishedBy: this.actorId,
-      })
-      .pipe(
-        switchMap(() => this.api.listVersions(this.labId())),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: (versions) => {
-          this.versions.set(newestFirst(versions));
-          this.snackBar.open('Draft published', 'Dismiss', {
-            duration: 2400,
-          });
-        },
-        error: () => {
-          this.snackBar.open('Failed to publish draft', 'Dismiss', {
-            duration: 3000,
-          });
-        },
-      });
+    this.openEditor();
   }
 
   draftVersion(): LabVersionEntity | undefined {

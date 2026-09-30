@@ -1,0 +1,315 @@
+<section class="editor-page">
+  <a mat-button [routerLink]="['..']">← Challenge overview</a>
+  @if (loading()) {
+  <div class="state">
+    <mat-spinner diameter="32" />
+    <p>Loading your challenge…</p>
+  </div>
+  } @else if (!versionId()) {
+  <div class="state" role="alert">
+    <p>{{ error() }}</p>
+    <button mat-button (click)="load()">Retry</button>
+  </div>
+  } @else {
+  <header class="editor-header">
+    <div>
+      <p class="eyebrow">
+        CHALLENGE STUDIO · VERSION {{ versionNumber() }}
+      </p>
+      <h1>{{ labTitle() }}</h1>
+      <p>
+        {{ published() ? 'Published · read only' : dirty() ? 'You have
+        unsaved changes' : 'Draft · saved' }}
+      </p>
+    </div>
+    <div class="actions">
+      <button
+        mat-stroked-button
+        (click)="saveDraft()"
+        [disabled]="!!busy() || published()"
+      >
+        {{ busy() === 'save' ? 'Saving…' : 'Save draft' }}
+      </button>
+      <button
+        mat-stroked-button
+        (click)="verifyReference()"
+        [disabled]="!!busy() || published()"
+      >
+        {{ busy() === 'verify' ? 'Running tests…' : 'Verify solution'
+        }}
+      </button>
+      <button
+        mat-flat-button
+        (click)="publishDraft()"
+        [disabled]="!!busy() || published()"
+      >
+        {{ busy() === 'publish' ? 'Verifying & publishing…' :
+        'Publish' }}
+      </button>
+    </div>
+  </header>
+  @if (error()) {
+  <p class="banner error" role="alert">{{ error() }}</p>
+  } @if (notice()) {
+  <p class="banner" role="status">{{ notice() }}</p>
+  }
+  <div class="workspace">
+    <form [formGroup]="form">
+      <mat-tab-group animationDuration="0ms" [preserveContent]="true">
+        <mat-tab label="1. Problem">
+          <section class="panel">
+            <h2>Define the challenge</h2>
+            <p>
+              Explain the goal, show an example, and state the
+              constraints. This is what learners will see.
+            </p>
+            <label for="statement"
+              >Problem statement (Markdown)</label
+            >
+            <textarea
+              id="statement"
+              rows="14"
+              formControlName="promptMarkdown"
+            ></textarea>
+            <h3>Progressive hints</h3>
+            <ngx-hints-editor formControlName="hints" />
+          </section>
+        </mat-tab>
+        <mat-tab label="2. Code">
+          <section class="panel">
+            <div class="fields">
+              <mat-form-field appearance="outline"
+                ><mat-label>Language</mat-label>
+                <mat-select formControlName="language"
+                  ><mat-option value="typescript"
+                    >TypeScript</mat-option
+                  ><mat-option value="javascript"
+                    >JavaScript</mat-option
+                  ></mat-select
+                >
+              </mat-form-field>
+              <div formGroupName="runner">
+                <mat-form-field appearance="outline"
+                  ><mat-label>Function name</mat-label
+                  ><input matInput formControlName="entryFnName"
+                /></mat-form-field>
+              </div>
+            </div>
+            <p>
+              Write a function that takes one JSON value and returns a
+              JSON value. For multiple parameters, use an input
+              object. Imports and installed packages are not
+              supported.
+            </p>
+            <h3>Starter code <span>Learner visible</span></h3>
+            <ngx-codemirror-editor
+              label="Starter code"
+              formControlName="starterCode"
+              [language]="selectedLanguage()"
+            />
+            <div formGroupName="referenceSolution">
+              <h3>Reference solution <span>Admin only</span></h3>
+              <p>
+                This implementation must pass every sample and hidden
+                test before publication.
+              </p>
+              <ngx-codemirror-editor
+                label="Reference solution"
+                formControlName="code"
+                [language]="selectedLanguage()"
+              />
+              <label for="notes">Solution notes (admin only)</label>
+              <textarea
+                id="notes"
+                rows="4"
+                formControlName="notesMarkdown"
+              ></textarea>
+            </div>
+          </section>
+        </mat-tab>
+        <mat-tab label="3. Test cases">
+          <section class="panel">
+            <h2>Prove the solution</h2>
+            <p>
+              Inputs and expected results accept any JSON value,
+              including numbers, strings, arrays, booleans and null.
+              Use deep equality for objects and arrays.
+            </p>
+            <h3>
+              Sample tests
+              <span>{{ sampleTests.length }} · Learner visible</span>
+            </h3>
+            @for (ctrl of sampleTests.controls; track ctrl; let i =
+            $index) { @if (ctrl.value.kind === 'io') {
+            <ngx-io-testcase-editor
+              [formControl]="ctrl"
+              [language]="selectedLanguage()"
+              (remove)="removeTest('sample', i)"
+              (jsonErrorsChange)="setJsonErrors('sample', i, $event)"
+            />
+            } @else {
+            <p role="alert">
+              Legacy unit test: {{ ctrl.value.name }}. Replace it with
+              an input/output test.
+            </p>
+            <button
+              mat-button
+              type="button"
+              (click)="removeTest('sample', i)"
+              [disabled]="!!busy() || published()"
+            >
+              Remove legacy sample test
+            </button>
+            } }
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="addTest('sample')"
+              [disabled]="!!busy() || published()"
+            >
+              Add sample test
+            </button>
+            <h3>
+              Hidden tests
+              <span>{{ hiddenTests.length }} · Admin only</span>
+            </h3>
+            <p>
+              Include edge cases: empty inputs, boundary values,
+              duplicates, and negative numbers.
+            </p>
+            @for (ctrl of hiddenTests.controls; track ctrl; let i =
+            $index) { @if (ctrl.value.kind === 'io') {
+            <ngx-io-testcase-editor
+              [formControl]="ctrl"
+              [language]="selectedLanguage()"
+              (remove)="removeTest('hidden', i)"
+              (jsonErrorsChange)="setJsonErrors('hidden', i, $event)"
+            />
+            } @else {
+            <p role="alert">
+              Legacy unit test: {{ ctrl.value.name }}. Replace it with
+              an input/output test.
+            </p>
+            <button
+              mat-button
+              type="button"
+              (click)="removeTest('hidden', i)"
+              [disabled]="!!busy() || published()"
+            >
+              Remove legacy hidden test
+            </button>
+            } }
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="addTest('hidden')"
+              [disabled]="!!busy() || published()"
+            >
+              Add hidden test
+            </button>
+            <h3>Execution limits</h3>
+            <div class="fields" formGroupName="runner">
+              <mat-form-field appearance="outline"
+                ><mat-label>Timeout per case (ms)</mat-label
+                ><input
+                  matInput
+                  type="number"
+                  min="100"
+                  max="10000"
+                  formControlName="timeoutMs"
+              /></mat-form-field>
+              <mat-form-field appearance="outline"
+                ><mat-label>Memory per case (MB)</mat-label
+                ><input
+                  matInput
+                  type="number"
+                  min="64"
+                  max="512"
+                  formControlName="memoryMb"
+              /></mat-form-field>
+            </div>
+          </section>
+        </mat-tab>
+        <mat-tab label="4. Learner preview">
+          <section class="panel preview">
+            <p class="eyebrow">
+              LEARNER CONTENT · HIDDEN TESTS AND SOLUTION EXCLUDED
+            </p>
+            <h2>{{ labTitle() }}</h2>
+            <div
+              class="statement-preview"
+              [innerHTML]="previewMarkdown()"
+            ></div>
+            <h3>Starter code</h3>
+            <pre>{{ form.controls.starterCode.value }}</pre>
+            <h3>Examples</h3>
+            @for (test of sampleTests.getRawValue(); track $index) {
+            <article>
+              <strong>{{ test.name }}</strong>
+              <p>Input</p>
+              <pre>{{ test.input | json }}</pre>
+              <p>Expected result</p>
+              <pre>{{ test.expected | json }}</pre>
+            </article>
+            }
+          </section>
+        </mat-tab>
+      </mat-tab-group>
+    </form>
+    <aside class="checklist">
+      <p class="eyebrow">PUBLISH CHECKLIST</p>
+      <h2>Make it teachable.</h2>
+      <p>1. Describe the problem and constraints.</p>
+      <p>2. Provide a useful starting point.</p>
+      <p>3. Cover examples and edge cases.</p>
+      <p>4. Verify your reference solution.</p>
+      <hr />
+      <p>
+        Publishing saves your edits and runs every test again.
+        Published versions stay unchanged; future edits start a new
+        draft.
+      </p>
+      @if (verification(); as run) {
+      <div
+        class="run-summary"
+        [class.failed]="!run.passed"
+        role="status"
+      >
+        <strong>{{ run.passedTests }} / {{ run.totalTests }}</strong>
+        <p>tests passed · {{ run.durationMs }} ms</p>
+      </div>
+      }
+    </aside>
+  </div>
+  @if (verification(); as run) {
+  <section class="results" aria-label="Verification results">
+    <h2>Verification results</h2>
+    @for (result of run.results; track $index) {
+    <details [open]="result.status !== 'passed'">
+      <summary>
+        <span
+          class="result-status"
+          [class.failed]="result.status !== 'passed'"
+          >{{ result.status }}</span
+        >
+        {{ result.name }} · {{ result.suite }} · {{ result.durationMs
+        }} ms
+      </summary>
+      @if (result.message) {
+      <p>{{ result.message }}</p>
+      }
+      <div class="result-values">
+        <div>
+          <strong>Expected</strong>
+          <pre>{{ result.expected | json }}</pre>
+        </div>
+        <div>
+          <strong>Actual</strong>
+          <pre>{{ result.actual | json }}</pre>
+        </div>
+      </div>
+    </details>
+    }
+  </section>
+  } }
+</section>
