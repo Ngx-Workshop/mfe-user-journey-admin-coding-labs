@@ -43,3 +43,7 @@ The API was left running on 127.0.0.1:3009 against coding_labs_local, with Docke
 Browser note: one historical shell view-transition “viewport size changed” error was observed before final reload; final authoring operations succeeded. No new editor errors were observed during the final flow.
 
 [Verified editor screenshot](../../docs/images/challenge-studio.png)
+
+## Production deployment follow-up — 2026-09-30
+
+The user authorized deployment through pushes to main. Service commit 70b2881 deployed successfully in GitHub Actions run 36738832824. The frontend's first run (36739285729) stopped at npm ci: npm 10.9.9 required optional dependency entries omitted by the local npm 11 lockfile. Regenerated the lockfile with npm 10.9.9; its clean-install dry run now passes. No application dependency ranges changed. The next push retries deployment. Production reference verification/publication still requires configuring the service's isolated Docker daemon connection and preloading its runner image; the current deployment supplies only the Docker CLI.
