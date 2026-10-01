@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -13,87 +14,76 @@ import { entityId } from '../utils/lab-entity.utils';
 @Component({
   selector: 'ngx-version-list',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule, DatePipe],
   template: `
     @if (versions.length === 0) {
-      <p class="empty">No versions yet.</p>
+      <p class="empty">
+        No versions yet. Open the editor to start the first draft.
+      </p>
     } @else {
-      <table class="versions-table">
-        <thead>
-          <tr>
-            <th>Version</th>
-            <th>Draft</th>
-            <th>Published</th>
-            <th>Created</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (version of versions; track trackVersion(version)) {
+      <div
+        class="table-wrap"
+        tabindex="0"
+        role="region"
+        aria-label="Version history"
+      >
+        <table class="versions-table">
+          <thead>
             <tr>
-              <td>v{{ version.versionNumber }}</td>
-              <td>{{ version.isDraft ? 'Yes' : 'No' }}</td>
-              <td>{{ version.publishedAt || '-' }}</td>
-              <td>{{ version.createdAt || '-' }}</td>
-              <td class="actions">
-                <button
-                  mat-button
-                  type="button"
-                  (click)="view.emit(version)"
-                >
-                  <mat-icon>visibility</mat-icon>
-                  View
-                </button>
-                @if (version.isDraft) {
+              <th>Version</th>
+              <th>Status</th>
+              <th>Published</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (version of versions; track trackVersion(version)) {
+              <tr>
+                <td>v{{ version.versionNumber }}</td>
+                <td>{{ version.isDraft ? 'Draft' : 'Published' }}</td>
+                <td>
+                  {{
+                    version.publishedAt
+                      ? (version.publishedAt | date: 'mediumDate')
+                      : 'Not published'
+                  }}
+                </td>
+                <td>
+                  {{
+                    version.createdAt
+                      ? (version.createdAt | date: 'mediumDate')
+                      : 'Unknown'
+                  }}
+                </td>
+                <td class="table-actions">
                   <button
                     mat-button
                     type="button"
-                    (click)="editDraft.emit(version)"
+                    (click)="view.emit(version)"
                   >
-                    <mat-icon>edit</mat-icon>
-                    Edit
+                    <mat-icon>visibility</mat-icon>
+                    View
                   </button>
-                  <button
-                    mat-flat-button
-                    type="button"
-                    (click)="publish.emit(version)"
-                  >
-                    <mat-icon>publish</mat-icon>
-                    Publish
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+                  @if (version.isDraft && !readOnly) {
+                    <button
+                      mat-button
+                      type="button"
+                      (click)="editDraft.emit(version)"
+                    >
+                      <mat-icon>edit</mat-icon>
+                      Edit
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     }
   `,
-  styles: [
-    `
-      .versions-table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th,
-      td {
-        text-align: left;
-        padding: 10px 8px;
-        border-bottom: 1px solid #dde2ea;
-      }
-
-      .actions {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-      }
-
-      .empty {
-        color: #566071;
-      }
-    `,
-  ],
+  styleUrls: ['../pages/journey.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VersionListComponent {
@@ -101,7 +91,7 @@ export class VersionListComponent {
 
   @Output() readonly view = new EventEmitter<LabVersionEntity>();
   @Output() readonly editDraft = new EventEmitter<LabVersionEntity>();
-  @Output() readonly publish = new EventEmitter<LabVersionEntity>();
+  @Input() readOnly = false;
 
   trackVersion(version: LabVersionEntity): string {
     return entityId(version);

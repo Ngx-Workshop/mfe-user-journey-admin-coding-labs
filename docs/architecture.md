@@ -37,3 +37,7 @@ service-coding-labs owns /labs, /versions, /embeds and /published-labs. Producti
 Document/learner repositories can use the overview's labId/pinnedVersionId reference and the backend's redacted published-content endpoint. This remote does not implement learner submissions, scoring or workshop document editing.
 
 References: [Marked](https://marked.js.org/), [Angular sanitization](https://angular.dev/best-practices/security).
+
+## Shared journey presentation
+
+All five pages use component-scoped `pages/journey.scss` for the centered 70vw clamp wrapper, theme colors, page headings, panels, feedback and responsive table containment. Page navigation retains the shell mount prefix. Version inspection renders sanitized Markdown and expands individual sample/hidden cases. Catalog requests are debounced and superseded requests cancelled. See `specs/002-journey-polish/handoff.md` for browser evidence.

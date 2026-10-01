@@ -1,0 +1,168 @@
+<section class="page">
+  <div class="wrapper">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Workshop authoring</p>
+        <h1>Coding Labs</h1>
+        <p class="subtitle">
+          Create challenges, test your solutions, and publish them for
+          learners.
+        </p>
+      </div>
+      <a mat-flat-button [routerLink]="['new']"
+        ><mat-icon>add</mat-icon>Create lab</a
+      >
+    </header>
+    <form
+      class="panel panel-soft form"
+      [formGroup]="filtersForm"
+      (submit)="$event.preventDefault()"
+      aria-label="Filter coding labs"
+    >
+      <div class="section-header">
+        <h2>Find a lab</h2>
+        <button
+          mat-button
+          type="button"
+          (click)="clearFilters()"
+          [disabled]="!hasFilters()"
+        >
+          Clear filters
+        </button>
+      </div>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic"
+        ><mat-label>Search by title</mat-label
+        ><mat-icon matPrefix>search</mat-icon
+        ><input
+          matInput
+          formControlName="q"
+          placeholder="e.g. Sum an array"
+      /></mat-form-field>
+      <div class="row-2">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic"
+          ><mat-label>Workshop ID</mat-label
+          ><input matInput formControlName="workshopId"
+        /></mat-form-field>
+        <div class="row-2">
+          <mat-form-field
+            appearance="outline"
+            subscriptSizing="dynamic"
+            ><mat-label>Status</mat-label
+            ><mat-select formControlName="status"
+              ><mat-option value="">All statuses</mat-option
+              ><mat-option value="draft">Draft</mat-option
+              ><mat-option value="published">Published</mat-option
+              ><mat-option value="archived"
+                >Archived</mat-option
+              ></mat-select
+            ></mat-form-field
+          >
+          <mat-form-field
+            appearance="outline"
+            subscriptSizing="dynamic"
+            ><mat-label>Tag</mat-label
+            ><input matInput formControlName="tag"
+          /></mat-form-field>
+        </div>
+      </div>
+    </form>
+    @if (loading()) {
+    <div class="state" role="status">
+      <mat-spinner diameter="32" aria-label="Loading labs" />
+      <p>Loading labs…</p>
+    </div>
+    } @else if (error()) {
+    <div class="state panel" role="alert">
+      <h2>We couldn’t load your labs</h2>
+      <p class="muted">
+        Try again in a moment. Your filters are still here.
+      </p>
+      <button mat-stroked-button (click)="reload()">Try again</button>
+    </div>
+    } @else if (!labs().length) {
+    <div class="state panel">
+      <mat-icon>search_off</mat-icon>
+      <h2>
+        {{ hasFilters() ? 'No matching labs' : 'Your first challenge
+        starts here' }}
+      </h2>
+      <p class="muted">
+        {{ hasFilters() ? 'Try a different title, workshop, status, or
+        tag.' : 'Create a lab, add examples and edge cases, then
+        verify your solution.' }}
+      </p>
+      @if (hasFilters()) {
+      <button mat-stroked-button (click)="clearFilters()">
+        Clear filters
+      </button>
+      } @else {
+      <a mat-flat-button [routerLink]="['new']">Create lab</a> }
+    </div>
+    } @else {
+    <p class="muted" role="status">
+      {{ labs().length }} {{ labs().length === 1 ? 'lab' : 'labs' }}
+      shown
+    </p>
+    <div
+      class="table-wrap"
+      tabindex="0"
+      role="region"
+      aria-label="Coding labs results"
+    >
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Challenge</th>
+            <th scope="col">Status</th>
+            <th scope="col">Updated</th>
+            <th scope="col">Difficulty</th>
+            <th scope="col">Duration</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (lab of labs(); track trackLab(lab)) {
+          <tr>
+            <td>
+              <a class="title-link" [routerLink]="[trackLab(lab)]"
+                >{{ lab.title || 'Untitled lab' }}</a
+              >
+              <p class="muted">{{ (lab.tags || []).join(' · ') }}</p>
+            </td>
+            <td><ngx-lab-status-chip [status]="toStatus(lab)" /></td>
+            <td>
+              {{ lab.updatedAt ? (lab.updatedAt | date:'mediumDate') :
+              'Not yet saved' }}
+            </td>
+            <td>{{ (lab.difficulty | titlecase) || 'Not set' }}</td>
+            <td>
+              {{ lab.estimatedMinutes ? lab.estimatedMinutes + ' min'
+              : 'Not set' }}
+            </td>
+            <td class="table-actions">
+              <a
+                mat-button
+                [routerLink]="[trackLab(lab)]"
+                [attr.aria-label]="'Open ' + lab.title"
+                >Open</a
+              >
+              @if (toStatus(lab) !== 'archived') {
+              <button
+                mat-button
+                (click)="archive(lab)"
+                [disabled]="!!archivingId()"
+                [attr.aria-label]="'Archive ' + lab.title"
+              >
+                {{ archivingId() === trackLab(lab) ? 'Archiving…' :
+                'Archive' }}
+              </button>
+              }
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+  </div>
+</section>

@@ -42,6 +42,7 @@ import { MatInputModule } from '@angular/material/input';
             mat-icon-button
             type="button"
             (click)="move($index, -1)"
+            [attr.aria-label]="'Move hint ' + ($index + 1) + ' up'"
             [disabled]="disabled || $index === 0"
           >
             <mat-icon>arrow_upward</mat-icon>
@@ -50,6 +51,7 @@ import { MatInputModule } from '@angular/material/input';
             mat-icon-button
             type="button"
             (click)="move($index, 1)"
+            [attr.aria-label]="'Move hint ' + ($index + 1) + ' down'"
             [disabled]="disabled || $index === hints.length - 1"
           >
             <mat-icon>arrow_downward</mat-icon>
@@ -58,6 +60,7 @@ import { MatInputModule } from '@angular/material/input';
             mat-icon-button
             type="button"
             (click)="removeHint($index)"
+            [attr.aria-label]="'Remove hint ' + ($index + 1)"
             [disabled]="disabled"
           >
             <mat-icon>delete</mat-icon>
@@ -84,11 +87,20 @@ import { MatInputModule } from '@angular/material/input';
 
       .row {
         display: grid;
-        grid-template-columns: 1fr auto auto auto;
+        grid-template-columns: minmax(0, 1fr) auto auto auto;
         gap: 8px;
         align-items: center;
       }
 
+      @media (max-width: 600px) {
+        .row {
+          grid-template-columns: repeat(3, auto);
+          justify-content: start;
+        }
+        .field {
+          grid-column: 1 / -1;
+        }
+      }
       .field {
         width: 100%;
       }

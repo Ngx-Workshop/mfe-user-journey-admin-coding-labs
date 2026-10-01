@@ -1,22 +1,12 @@
 :host {
   display: block;
 }
-.editor-page {
-  max-width: 1500px;
-  margin: auto;
-  padding: 24px;
-}
 .editor-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 24px;
   padding: 20px 0;
-}
-h1 {
-  font-size: clamp(1.6rem, 3vw, 2.5rem);
-  line-height: 1.2;
-  margin: 8px 0;
 }
 h2 {
   margin: 0;
@@ -50,7 +40,7 @@ h3 span {
 }
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-columns: minmax(0, 1fr) 240px;
   gap: 24px;
   align-items: start;
 }
@@ -61,6 +51,8 @@ h3 span {
   overflow: hidden;
 }
 .panel {
+  border: 0;
+  border-radius: 0;
   display: grid;
   gap: 16px;
   padding: 24px;
@@ -167,19 +159,32 @@ summary {
     grid-template-columns: 1fr;
   }
   .checklist {
-    display: none;
+    display: block;
   }
   .editor-header {
     align-items: start;
-    flex-direction: column;
+    flex-wrap: wrap;
   }
 }
 @media (max-width: 600px) {
-  .editor-page,
   .panel {
     padding: 16px;
   }
   .result-values {
     grid-template-columns: 1fr;
   }
+}
+
+.fields > * {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+@media (max-width: 1250px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.editor-header > .actions {
+  flex: 0 1 auto;
 }

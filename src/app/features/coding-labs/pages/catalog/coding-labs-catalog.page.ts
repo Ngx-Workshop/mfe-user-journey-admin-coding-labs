@@ -18,8 +18,8 @@ import {
   MatSnackBarModule,
 } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
-import { finalize } from 'rxjs';
+import { debounceTime, finalize, Subscription } from 'rxjs';
+import { DatePipe, TitleCasePipe } from '@angular/common';
 import { CodingLabsApiClient } from '../../api/coding-labs-api-client.service';
 import { LabStatusChipComponent } from '../../components/lab-status-chip.component';
 import { LabEntity } from '../../models/coding-labs.models';
@@ -38,240 +38,12 @@ import { entityId, labStatus } from '../../utils/lab-entity.utils';
     MatSelectModule,
     MatSnackBarModule,
     LabStatusChipComponent,
-    NgxParticleHeader,
+    DatePipe,
+    TitleCasePipe,
     MatIconModule,
   ],
-  template: `
-    <ngx-particle-header class="header">
-      <h1>Coding Labs</h1>
-    </ngx-particle-header>
-    <div class="action-bar">
-      <div class="flex-spacer"></div>
-      <button matButton="filled" [routerLink]="['new']">
-        <mat-icon>note_add</mat-icon>Create Lab
-      </button>
-    </div>
-
-    <section class="page">
-      <div class="wrapper">
-        <form class="filters" [formGroup]="filtersForm">
-          <div class="filter-row header">
-            <h3>Filters</h3>
-            <button
-              matButton
-              type="button"
-              (click)="filtersForm.reset()"
-            >
-              <mat-icon>clear_all</mat-icon> Clear All
-            </button>
-          </div>
-
-          <div class="filter-row">
-            <mat-form-field appearance="outline" class="search-bar">
-              <mat-label>Search</mat-label>
-              <input matInput formControlName="q" />
-            </mat-form-field>
-          </div>
-
-          <div class="filter-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Workshop ID</mat-label>
-              <input matInput formControlName="workshopId" />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Status</mat-label>
-              <mat-select formControlName="status">
-                <mat-option value="">Any</mat-option>
-                <mat-option value="draft">draft</mat-option>
-                <mat-option value="published">published</mat-option>
-                <mat-option value="archived">archived</mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Tag</mat-label>
-              <input matInput formControlName="tag" />
-            </mat-form-field>
-          </div>
-        </form>
-
-        @if (loading()) {
-          <div class="state">
-            <mat-spinner diameter="30"></mat-spinner>
-          </div>
-        } @else if (error()) {
-          <div class="state error">
-            <p>{{ error() }}</p>
-            <button mat-button type="button" (click)="reload()">
-              Retry
-            </button>
-          </div>
-        } @else if (labs().length === 0) {
-          <div class="state"><p>No labs found.</p></div>
-        } @else {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Status</th>
-                  <th>Updated</th>
-                  <th>Tags</th>
-                  <th>Difficulty</th>
-                  <th>Est. minutes</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (lab of labs(); track trackLab(lab)) {
-                  <tr>
-                    <td>{{ lab.title || '(untitled)' }}</td>
-                    <td>
-                      <ngx-lab-status-chip
-                        [status]="toStatus(lab)"
-                      ></ngx-lab-status-chip>
-                    </td>
-                    <td>{{ lab.updatedAt || '-' }}</td>
-                    <td>{{ (lab.tags || []).join(', ') || '-' }}</td>
-                    <td>{{ lab.difficulty || '-' }}</td>
-                    <td>{{ lab.estimatedMinutes ?? '-' }}</td>
-                    <td class="actions">
-                      <button
-                        mat-button
-                        type="button"
-                        [routerLink]="[trackLab(lab)]"
-                      >
-                        Open
-                      </button>
-                      @if (toStatus(lab) !== 'archived') {
-                        <button
-                          mat-button
-                          type="button"
-                          (click)="archive(lab)"
-                        >
-                          Archive
-                        </button>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </div>
-    </section>
-  `,
-  styles: [
-    `
-      .page {
-        display: flex;
-        justify-content: center;
-      }
-      .wrapper {
-        padding: 1rem;
-        flex: 0 1 clamp(480px, 70vw, 1400px);
-        max-width: 100%;
-      }
-      .header h1 {
-        font-size: 1.85rem;
-        font-weight: 100;
-        margin: 1.7rem 1rem;
-      }
-
-      .filters {
-        background: var(--mat-sys-surface-container-low);
-        padding: 1.5rem;
-        border-radius: var(
-          --mat-card-elevated-container-shape,
-          var(--mat-sys-corner-medium)
-        );
-        margin-bottom: 2rem;
-        h3 {
-          margin-top: 0;
-          margin-bottom: 1rem;
-        }
-      }
-
-      .filter-row {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        align-items: center;
-        margin-bottom: 1rem;
-
-        &.header {
-          justify-content: space-between;
-        }
-      }
-
-      .table-wrap {
-        overflow: auto;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th,
-      td {
-        padding: 10px 8px;
-        border-bottom: 1px solid #e1e6ee;
-        text-align: left;
-      }
-
-      .actions {
-        white-space: nowrap;
-      }
-
-      .state {
-        min-height: 140px;
-        display: grid;
-        place-items: center;
-      }
-
-      .state.error {
-        color: #b3261e;
-      }
-
-      .search-bar {
-        width: 100%;
-        max-width: 600px;
-      }
-
-      .action-bar {
-        position: sticky;
-        top: 56px;
-        height: 56px;
-        z-index: 5;
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        background: var(--mat-sys-primary);
-        align-items: center;
-        a,
-        button {
-          color: var(--mat-sys-on-primary);
-          background: var(--mat-sys-primary);
-          margin: 0 12px;
-        }
-      }
-
-      @media (max-width: 960px) {
-        .filters {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-      }
-
-      @media (max-width: 640px) {
-        .filters {
-          grid-template-columns: 1fr;
-        }
-      }
-    `,
-  ],
+  templateUrl: './coding-labs-catalog.page.html',
+  styleUrls: ['../journey.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodingLabsCatalogPage {
@@ -289,6 +61,8 @@ export class CodingLabsCatalogPage {
     q: this.fb.control(''),
   });
 
+  private listRequest?: Subscription;
+  readonly archivingId = signal('');
   readonly labs = signal<LabEntity[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -310,19 +84,21 @@ export class CodingLabsCatalogPage {
       });
 
     this.filtersForm.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: this.toQueryParams(),
+          replaceUrl: true,
         });
       });
   }
 
   reload(): void {
+    this.listRequest?.unsubscribe();
     this.loading.set(true);
     this.error.set(null);
-    this.api
+    this.listRequest = this.api
       .listLabs(this.toQueryParams())
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -336,14 +112,18 @@ export class CodingLabsCatalogPage {
 
   archive(lab: LabEntity): void {
     const id = entityId(lab);
-    if (!id) return;
+    if (!id || this.archivingId()) return;
 
     const confirmed = confirm(`Archive lab \"${lab.title ?? id}\"?`);
     if (!confirmed) return;
 
+    this.archivingId.set(id);
     this.api
       .archiveLab(id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        finalize(() => this.archivingId.set('')),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe({
         next: () => {
           this.snackBar.open('Lab archived', 'Dismiss', {
@@ -365,6 +145,21 @@ export class CodingLabsCatalogPage {
 
   toStatus(lab: LabEntity) {
     return labStatus(lab);
+  }
+
+  hasFilters(): boolean {
+    return Object.values(this.filtersForm.getRawValue()).some(
+      Boolean
+    );
+  }
+
+  clearFilters(): void {
+    this.filtersForm.reset({}, { emitEvent: false });
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true,
+    });
   }
 
   private toQueryParams(): Record<string, string> {

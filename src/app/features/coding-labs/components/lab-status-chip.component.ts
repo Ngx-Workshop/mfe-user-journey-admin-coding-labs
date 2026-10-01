@@ -3,28 +3,39 @@ import {
   Component,
   Input,
 } from '@angular/core';
-import { MatChipsModule } from '@angular/material/chips';
+import { TitleCasePipe } from '@angular/common';
 import { LabStatus } from '../models/coding-labs.models';
 
 @Component({
   selector: 'ngx-lab-status-chip',
   standalone: true,
-  imports: [MatChipsModule],
+  imports: [TitleCasePipe],
   template: `
-    <mat-chip [class]="statusClass">{{ status }}</mat-chip>
+    <span class="status" [class]="statusClass">{{
+      status | titlecase
+    }}</span>
   `,
   styles: [
     `
-      mat-chip.status-draft {
-        background: #10467a;
+      .status {
+        display: inline-block;
+        white-space: nowrap;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
       }
-
-      mat-chip.status-published {
-        background: #0d6a34;
+      .status-draft {
+        background: var(--mat-sys-secondary-container);
+        color: var(--mat-sys-on-secondary-container);
       }
-
-      mat-chip.status-archived {
-        background: #4f5968;
+      .status-published {
+        background: var(--mat-sys-tertiary-container);
+        color: var(--mat-sys-on-tertiary-container);
+      }
+      .status-archived {
+        background: var(--mat-sys-surface-container-highest);
+        color: var(--mat-sys-on-surface-variant);
       }
     `,
   ],

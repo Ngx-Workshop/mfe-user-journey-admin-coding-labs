@@ -63,7 +63,7 @@ interface IoTestcaseJsonError {
           type="button"
           (click)="remove.emit()"
           [disabled]="disabled"
-          aria-label="Remove testcase"
+          [attr.aria-label]="'Remove test: ' + value.name"
         >
           <mat-icon>delete</mat-icon>
         </button>
@@ -77,13 +77,15 @@ interface IoTestcaseJsonError {
             (ngModelChange)="updateComparator('kind', $event)"
             [disabled]="disabled"
           >
-            <mat-option value="strictEqual">strictEqual</mat-option>
-            <mat-option value="deepEqual">deepEqual</mat-option>
+            <mat-option value="strictEqual">Exact value</mat-option>
+            <mat-option value="deepEqual"
+              >Deep equality (objects and arrays)</mat-option
+            >
             <mat-option value="stringNormalized"
-              >stringNormalized</mat-option
+              >Normalized text</mat-option
             >
             <mat-option value="numberTolerance"
-              >numberTolerance</mat-option
+              >Number within tolerance</mat-option
             >
           </mat-select>
         </mat-form-field>
@@ -135,7 +137,9 @@ interface IoTestcaseJsonError {
             (valueChange)="onInputJsonChange($event)"
           ></ngx-codemirror-editor>
           @if (jsonErrors.inputJson) {
-            <p class="error">{{ jsonErrors.inputJson }}</p>
+            <p class="error" role="alert">
+              {{ jsonErrors.inputJson }}
+            </p>
           }
         </div>
 
@@ -149,7 +153,9 @@ interface IoTestcaseJsonError {
             (valueChange)="onExpectedJsonChange($event)"
           ></ngx-codemirror-editor>
           @if (jsonErrors.expectedJson) {
-            <p class="error">{{ jsonErrors.expectedJson }}</p>
+            <p class="error" role="alert">
+              {{ jsonErrors.expectedJson }}
+            </p>
           }
         </div>
       </div>
@@ -173,7 +179,7 @@ interface IoTestcaseJsonError {
         display: grid;
         gap: 12px;
         padding: 12px;
-        border: 1px solid #dce1ea;
+        border: 1px solid var(--mat-sys-outline-variant);
         border-radius: 8px;
       }
 
@@ -187,7 +193,12 @@ interface IoTestcaseJsonError {
         justify-content: space-between;
       }
 
+      :host,
+      .json-grid > div {
+        min-width: 0;
+      }
       .name-field {
+        min-width: 0;
         flex: 1;
       }
 
@@ -205,11 +216,11 @@ interface IoTestcaseJsonError {
         display: block;
         margin-bottom: 6px;
         font-size: 0.85rem;
-        color: #4f5968;
+        color: var(--mat-sys-on-surface-variant);
       }
 
       .error {
-        color: #b3261e;
+        color: var(--mat-sys-error);
         font-size: 0.8rem;
         margin: 6px 0 0;
       }
@@ -230,9 +241,7 @@ interface IoTestcaseJsonError {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class IoTestcaseEditorComponent
-  implements ControlValueAccessor
-{
+export class IoTestcaseEditorComponent implements ControlValueAccessor {
   @Input() language: 'typescript' | 'javascript' = 'typescript';
   @Input() showUnitTestCode = false;
   @Output() readonly remove = new EventEmitter<void>();

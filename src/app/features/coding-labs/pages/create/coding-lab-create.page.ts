@@ -19,8 +19,8 @@ import {
   MatSnackBar,
   MatSnackBarModule,
 } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
-import { finalize, map, switchMap } from 'rxjs';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
 import { CODING_LABS_ACTOR_ID } from '../../../../config/coding-labs.config';
 import { CodingLabsApiClient } from '../../api/coding-labs-api-client.service';
 import { TagsChipsEditorComponent } from '../../components/tags-chips-editor.component';
@@ -36,6 +36,7 @@ import { entityId } from '../../utils/lab-entity.utils';
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    RouterLink,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
@@ -45,117 +46,132 @@ import { entityId } from '../../utils/lab-entity.utils';
   ],
   template: `
     <section class="page">
-      <h1>Create Coding Lab</h1>
+      <div class="wrapper">
+        <a mat-button class="breadcrumb" [routerLink]="['..']"
+          >← All coding labs</a
+        >
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">New challenge · Step 1 of 2</p>
+            <h1>Create a coding lab</h1>
+            <p class="subtitle">
+              Start with the details. Next, you’ll write the problem,
+              code, and test cases.
+            </p>
+          </div>
+        </header>
 
-      @if (error()) {
-        <p class="error">{{ error() }}</p>
-      }
+        @if (error()) {
+          <p class="banner error" role="alert">{{ error() }}</p>
+        }
 
-      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-        <mat-form-field appearance="outline">
-          <mat-label>Workshop ID</mat-label>
-          <input matInput formControlName="workshopId" />
-          @if (
-            form.controls.workshopId.invalid &&
-            form.controls.workshopId.touched
-          ) {
-            <mat-error>Workshop ID is required</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Title</mat-label>
-          <input matInput formControlName="title" />
-          @if (
-            form.controls.title.invalid && form.controls.title.touched
-          ) {
-            <mat-error>Title is required</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Slug</mat-label>
-          <input
-            matInput
-            formControlName="slug"
-            (input)="onSlugInput()"
-          />
-          @if (
-            form.controls.slug.invalid && form.controls.slug.touched
-          ) {
-            <mat-error>Slug is required</mat-error>
-          }
-        </mat-form-field>
-
-        <ngx-tags-chips-editor
-          formControlName="tags"
-        ></ngx-tags-chips-editor>
-
-        <div class="row-2">
+        <form
+          class="form panel"
+          [formGroup]="form"
+          (ngSubmit)="submit()"
+        >
           <mat-form-field appearance="outline">
-            <mat-label>Difficulty</mat-label>
-            <mat-select formControlName="difficulty">
-              <mat-option value="intro">intro</mat-option>
-              <mat-option value="easy">easy</mat-option>
-              <mat-option value="medium">medium</mat-option>
-              <mat-option value="hard">hard</mat-option>
-            </mat-select>
+            <mat-label>Workshop ID</mat-label>
+            <input matInput formControlName="workshopId" required />
+            <mat-hint
+              >The workshop this challenge belongs to.</mat-hint
+            >
+            @if (
+              form.controls.workshopId.invalid &&
+              form.controls.workshopId.touched
+            ) {
+              <mat-error>Workshop ID is required</mat-error>
+            }
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Estimated minutes</mat-label>
+            <mat-label>Title</mat-label>
             <input
               matInput
-              type="number"
-              formControlName="estimatedMinutes"
+              formControlName="title"
+              required
+              maxlength="200"
             />
+            @if (
+              form.controls.title.invalid &&
+              form.controls.title.touched
+            ) {
+              <mat-error>Title is required</mat-error>
+            }
           </mat-form-field>
-        </div>
 
-        <div class="actions">
-          <button mat-flat-button type="submit" [disabled]="saving()">
-            {{ saving() ? 'Creating...' : 'Create Lab' }}
-          </button>
-        </div>
-      </form>
+          <mat-form-field appearance="outline">
+            <mat-label>Slug</mat-label>
+            <input
+              matInput
+              formControlName="slug"
+              (input)="onSlugInput()"
+            />
+            <mat-hint
+              >Generated from the title; you can customize
+              it.</mat-hint
+            >
+            @if (
+              form.controls.slug.invalid && form.controls.slug.touched
+            ) {
+              <mat-error
+                >Use lowercase letters, numbers, and single
+                hyphens.</mat-error
+              >
+            }
+          </mat-form-field>
+
+          <ngx-tags-chips-editor
+            formControlName="tags"
+          ></ngx-tags-chips-editor>
+
+          <div class="row-2">
+            <mat-form-field appearance="outline">
+              <mat-label>Difficulty</mat-label>
+              <mat-select formControlName="difficulty">
+                <mat-option value="intro">Introductory</mat-option>
+                <mat-option value="easy">Easy</mat-option>
+                <mat-option value="medium">Medium</mat-option>
+                <mat-option value="hard">Hard</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Estimated minutes</mat-label>
+              <input
+                matInput
+                type="number"
+                min="1"
+                max="600"
+                formControlName="estimatedMinutes"
+              />
+              <mat-hint>Optional · 1–600 minutes.</mat-hint>
+              <mat-error
+                >Enter a duration between 1 and 600
+                minutes.</mat-error
+              >
+            </mat-form-field>
+          </div>
+
+          <div class="actions">
+            <a mat-button [routerLink]="['..']" [disabled]="saving()"
+              >Cancel</a
+            >
+            <button
+              mat-flat-button
+              type="submit"
+              [disabled]="saving()"
+            >
+              {{
+                saving() ? 'Creating lab…' : 'Create and open editor'
+              }}
+            </button>
+          </div>
+        </form>
+      </div>
     </section>
   `,
-  styles: [
-    `
-      .page {
-        padding: 20px;
-        display: grid;
-        gap: 12px;
-        max-width: 860px;
-      }
-
-      .form {
-        display: grid;
-        gap: 12px;
-      }
-
-      .row-2 {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-      }
-
-      .actions {
-        display: flex;
-        justify-content: flex-end;
-      }
-
-      .error {
-        color: #b3261e;
-      }
-
-      @media (max-width: 800px) {
-        .row-2 {
-          grid-template-columns: 1fr;
-        }
-      }
-    `,
-  ],
+  styleUrls: ['../journey.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodingLabCreatePage {
@@ -217,6 +233,7 @@ export class CodingLabCreatePage {
   }
 
   submit(): void {
+    if (this.saving()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -234,12 +251,16 @@ export class CodingLabCreatePage {
     };
 
     this.saving.set(true);
+    this.form.disable({ emitEvent: false });
     this.error.set(null);
 
     this.api
       .createLab(dto)
       .pipe(
-        finalize(() => this.saving.set(false)),
+        finalize(() => {
+          this.saving.set(false);
+          this.form.enable({ emitEvent: false });
+        }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({

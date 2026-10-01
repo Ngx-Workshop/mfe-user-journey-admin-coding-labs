@@ -61,7 +61,7 @@ import { apiError } from '../../utils/coding-labs-form.utils';
     IoTestcaseEditorComponent,
   ],
   templateUrl: './coding-lab-editor.page.html',
-  styleUrl: './coding-lab-editor.page.scss',
+  styleUrls: ['../journey.scss', './coding-lab-editor.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodingLabEditorPage {
