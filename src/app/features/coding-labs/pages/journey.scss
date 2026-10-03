@@ -75,6 +75,29 @@ p {
 .panel-soft {
   background: var(--mat-sys-surface-container-low);
 }
+.filters {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) repeat(
+      3,
+      minmax(155px, 1fr)
+    );
+  gap: 12px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--mat-sys-surface-container-low);
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+@media (max-width: 1100px) {
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .filters {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px;
+  }
+}
 .actions {
   display: flex;
   align-items: center;
@@ -230,4 +253,27 @@ summary {
 .wrapper > *,
 .section-header > div {
   min-width: 0;
+}
+
+.particle-header h1 {
+  font-size: 1.85rem;
+  font-weight: 100;
+  margin: 1.7rem 1rem;
+}
+.particle-header-action-bar {
+  position: sticky;
+  top: 56px;
+  height: 56px;
+  z-index: 5;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background: var(--mat-sys-primary);
+  align-items: center;
+  a,
+  button {
+    color: var(--mat-sys-on-primary);
+    background: var(--mat-sys-primary);
+    margin: 0 12px;
+  }
 }

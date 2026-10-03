@@ -1,5 +1,4 @@
 import { DatePipe, JsonPipe } from '@angular/common';
-import { marked } from 'marked';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,8 +8,11 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
+import { marked } from 'marked';
 import { finalize } from 'rxjs';
 import { CodemirrorEditorComponent } from '../../../../shared/components/codemirror-editor/codemirror-editor.component';
 import { CodingLabsApiClient } from '../../api/coding-labs-api-client.service';
@@ -26,6 +28,8 @@ import { LabVersionEntity } from '../../models/coding-labs.models';
     MatButtonModule,
     MatProgressSpinnerModule,
     CodemirrorEditorComponent,
+    NgxParticleHeader,
+    MatIconModule,
   ],
   templateUrl: './coding-lab-version-view.page.html',
   styleUrls: ['../journey.scss'],

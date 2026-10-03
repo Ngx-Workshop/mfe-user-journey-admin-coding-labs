@@ -1,25 +1,28 @@
+<header class="header-background">
+  <div class="header-section">
+    <div class="header-headline">
+      <h1>Coding-Labs-Editor</h1>
+      <h2>
+        Create challenges, test your solutions, and publish them for
+        learners.
+      </h2>
+    </div>
+    <div class="header-start">
+      <a matButton="elevated" [routerLink]="['new']"
+        ><mat-icon>add</mat-icon>Create a New Lab</a
+      >
+    </div>
+  </div>
+</header>
 <section class="page">
   <div class="wrapper">
-    <header class="page-header">
-      <div>
-        <p class="eyebrow">Workshop authoring</p>
-        <h1>Coding Labs</h1>
-        <p class="subtitle">
-          Create challenges, test your solutions, and publish them for
-          learners.
-        </p>
-      </div>
-      <a mat-flat-button [routerLink]="['new']"
-        ><mat-icon>add</mat-icon>Create lab</a
-      >
-    </header>
     <form
-      class="panel panel-soft form"
+      class="filters"
       [formGroup]="filtersForm"
       (submit)="$event.preventDefault()"
       aria-label="Filter coding labs"
     >
-      <div class="section-header">
+      <!-- <div class="section-header">
         <h2>Find a lab</h2>
         <button
           mat-button
@@ -29,7 +32,7 @@
         >
           Clear filters
         </button>
-      </div>
+      </div> -->
       <mat-form-field appearance="outline" subscriptSizing="dynamic"
         ><mat-label>Search by title</mat-label
         ><mat-icon matPrefix>search</mat-icon
@@ -38,33 +41,25 @@
           formControlName="q"
           placeholder="e.g. Sum an array"
       /></mat-form-field>
-      <div class="row-2">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic"
-          ><mat-label>Workshop ID</mat-label
-          ><input matInput formControlName="workshopId"
-        /></mat-form-field>
-        <div class="row-2">
-          <mat-form-field
-            appearance="outline"
-            subscriptSizing="dynamic"
-            ><mat-label>Status</mat-label
-            ><mat-select formControlName="status"
-              ><mat-option value="">All statuses</mat-option
-              ><mat-option value="draft">Draft</mat-option
-              ><mat-option value="published">Published</mat-option
-              ><mat-option value="archived"
-                >Archived</mat-option
-              ></mat-select
-            ></mat-form-field
-          >
-          <mat-form-field
-            appearance="outline"
-            subscriptSizing="dynamic"
-            ><mat-label>Tag</mat-label
-            ><input matInput formControlName="tag"
-          /></mat-form-field>
-        </div>
-      </div>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic"
+        ><mat-label>Workshop ID</mat-label
+        ><input matInput formControlName="workshopId"
+      /></mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic"
+        ><mat-label>Status</mat-label
+        ><mat-select formControlName="status"
+          ><mat-option value="">All statuses</mat-option
+          ><mat-option value="draft">Draft</mat-option
+          ><mat-option value="published">Published</mat-option
+          ><mat-option value="archived"
+            >Archived</mat-option
+          ></mat-select
+        ></mat-form-field
+      >
+      <mat-form-field appearance="outline" subscriptSizing="dynamic"
+        ><mat-label>Tag</mat-label
+        ><input matInput formControlName="tag"
+      /></mat-form-field>
     </form>
     @if (loading()) {
     <div class="state" role="status">

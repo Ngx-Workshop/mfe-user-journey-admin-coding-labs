@@ -1,8 +1,16 @@
+<ngx-particle-header class="particle-header">
+  @if (lab(); as current) {
+  <h1>{{ current.title || 'Untitled lab' }}</h1>
+  <ngx-lab-status-chip [status]="status()" />
+  }
+</ngx-particle-header>
+<div class="particle-header-action-bar">
+  <a matButton="filled" [routerLink]="['..']"
+    ><mat-icon>arrow_back</mat-icon>All coding labs</a
+  >
+</div>
 <section class="page">
   <div class="wrapper">
-    <a mat-button class="breadcrumb" [routerLink]="['..']"
-      >← All coding labs</a
-    >
     @if (loading()) {
     <div class="state" role="status">
       <mat-spinner diameter="32" aria-label="Loading lab" />
@@ -14,19 +22,7 @@
       <p>{{ error() }}</p>
       <button mat-stroked-button (click)="load()">Try again</button>
     </div>
-    } @else if (lab(); as current) {
-    <header class="page-header">
-      <div>
-        <p class="eyebrow">Challenge overview</p>
-        <h1>{{ current.title || 'Untitled lab' }}</h1>
-        <p class="subtitle">
-          Manage your draft, review version history, and share a
-          published challenge.
-        </p>
-      </div>
-      <ngx-lab-status-chip [status]="status()" />
-    </header>
-    @if (status() === 'archived') {
+    } @else if (lab(); as current) { @if (status() === 'archived') {
     <p class="banner" role="status">
       This lab is archived. You can review its versions, but editing
       and publishing are unavailable.

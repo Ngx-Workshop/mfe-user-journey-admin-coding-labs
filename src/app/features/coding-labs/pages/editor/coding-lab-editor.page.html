@@ -1,8 +1,13 @@
+<ngx-particle-header class="particle-header">
+  <h1>{{ labTitle() }}</h1>
+</ngx-particle-header>
+<div class="particle-header-action-bar">
+  <a matButton="filled" [routerLink]="['..']"
+    ><mat-icon>arrow_back</mat-icon>Challenge overview</a
+  >
+</div>
 <section class="page">
   <div class="wrapper editor-page">
-    <a mat-button class="breadcrumb" [routerLink]="['..']"
-      >← Challenge overview</a
-    >
     @if (loading()) {
     <div class="state" role="status">
       <mat-spinner diameter="32" aria-label="Loading challenge" />

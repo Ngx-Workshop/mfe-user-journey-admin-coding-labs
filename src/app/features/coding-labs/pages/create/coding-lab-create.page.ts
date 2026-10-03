@@ -13,6 +13,7 @@ import {
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import {
@@ -20,6 +21,7 @@ import {
   MatSnackBarModule,
 } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
 import { finalize } from 'rxjs';
 import { CODING_LABS_ACTOR_ID } from '../../../../config/coding-labs.config';
 import { CodingLabsApiClient } from '../../api/coding-labs-api-client.service';
@@ -43,17 +45,24 @@ import { entityId } from '../../utils/lab-entity.utils';
     MatSelectModule,
     MatSnackBarModule,
     TagsChipsEditorComponent,
+    NgxParticleHeader,
+    MatIconModule,
   ],
   template: `
+    <ngx-particle-header class="particle-header">
+      <h1>Create a coding lab</h1>
+    </ngx-particle-header>
+    <div class="particle-header-action-bar">
+      <a matButton="filled" [routerLink]="['..']"
+        ><mat-icon>arrow_back</mat-icon>All coding labs</a
+      >
+    </div>
     <section class="page">
       <div class="wrapper">
-        <a mat-button class="breadcrumb" [routerLink]="['..']"
-          >← All coding labs</a
-        >
         <header class="page-header">
           <div>
             <p class="eyebrow">New challenge · Step 1 of 2</p>
-            <h1>Create a coding lab</h1>
+            <!-- <h1>Create a coding lab</h1> -->
             <p class="subtitle">
               Start with the details. Next, you’ll write the problem,
               code, and test cases.
@@ -62,7 +71,7 @@ import { entityId } from '../../utils/lab-entity.utils';
         </header>
 
         @if (error()) {
-          <p class="banner error" role="alert">{{ error() }}</p>
+        <p class="banner error" role="alert">{{ error() }}</p>
         }
 
         <form
@@ -76,11 +85,9 @@ import { entityId } from '../../utils/lab-entity.utils';
             <mat-hint
               >The workshop this challenge belongs to.</mat-hint
             >
-            @if (
-              form.controls.workshopId.invalid &&
-              form.controls.workshopId.touched
-            ) {
-              <mat-error>Workshop ID is required</mat-error>
+            @if ( form.controls.workshopId.invalid &&
+            form.controls.workshopId.touched ) {
+            <mat-error>Workshop ID is required</mat-error>
             }
           </mat-form-field>
 
@@ -92,11 +99,9 @@ import { entityId } from '../../utils/lab-entity.utils';
               required
               maxlength="200"
             />
-            @if (
-              form.controls.title.invalid &&
-              form.controls.title.touched
-            ) {
-              <mat-error>Title is required</mat-error>
+            @if ( form.controls.title.invalid &&
+            form.controls.title.touched ) {
+            <mat-error>Title is required</mat-error>
             }
           </mat-form-field>
 
@@ -111,13 +116,12 @@ import { entityId } from '../../utils/lab-entity.utils';
               >Generated from the title; you can customize
               it.</mat-hint
             >
-            @if (
-              form.controls.slug.invalid && form.controls.slug.touched
-            ) {
-              <mat-error
-                >Use lowercase letters, numbers, and single
-                hyphens.</mat-error
-              >
+            @if ( form.controls.slug.invalid &&
+            form.controls.slug.touched ) {
+            <mat-error
+              >Use lowercase letters, numbers, and single
+              hyphens.</mat-error
+            >
             }
           </mat-form-field>
 

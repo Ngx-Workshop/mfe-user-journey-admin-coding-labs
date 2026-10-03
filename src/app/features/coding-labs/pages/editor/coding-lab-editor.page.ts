@@ -1,4 +1,4 @@
-import { marked } from 'marked';
+import { JsonPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -7,10 +7,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { JsonPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  FormArray,
   FormBuilder,
   FormControl,
   ReactiveFormsModule,
@@ -18,11 +16,14 @@ import {
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
+import { marked } from 'marked';
 import { Observable, finalize, forkJoin, switchMap, tap } from 'rxjs';
 import { CODING_LABS_ACTOR_ID } from '../../../../config/coding-labs.config';
 import { CodemirrorEditorComponent } from '../../../../shared/components/codemirror-editor/codemirror-editor.component';
@@ -36,12 +37,12 @@ import {
   UpdateDraftVersionDto,
   VerificationDto,
 } from '../../models/coding-labs.models';
+import { apiError } from '../../utils/coding-labs-form.utils';
 import {
   createDefaultIoTest,
   entityId,
   selectDraftVersion,
 } from '../../utils/lab-entity.utils';
-import { apiError } from '../../utils/coding-labs-form.utils';
 
 @Component({
   selector: 'ngx-coding-lab-editor-page',
@@ -59,6 +60,8 @@ import { apiError } from '../../utils/coding-labs-form.utils';
     CodemirrorEditorComponent,
     HintsEditorComponent,
     IoTestcaseEditorComponent,
+    NgxParticleHeader,
+    MatIconModule,
   ],
   templateUrl: './coding-lab-editor.page.html',
   styleUrls: ['../journey.scss', './coding-lab-editor.page.scss'],
@@ -333,23 +336,23 @@ export class CodingLabEditorPage {
       action === 'save'
         ? save
         : action === 'verify'
-          ? save.pipe(
-              switchMap(() =>
-                this.api.verifyVersion(this.labId(), this.versionId())
+        ? save.pipe(
+            switchMap(() =>
+              this.api.verifyVersion(this.labId(), this.versionId())
+            )
+          )
+        : save.pipe(
+            switchMap(() =>
+              this.api.publishVersion(
+                this.labId(),
+                this.versionId(),
+                {
+                  publishedBy: this.actorId,
+                  expectedContentHash: this.versionHash(),
+                }
               )
             )
-          : save.pipe(
-              switchMap(() =>
-                this.api.publishVersion(
-                  this.labId(),
-                  this.versionId(),
-                  {
-                    publishedBy: this.actorId,
-                    expectedContentHash: this.versionHash(),
-                  }
-                )
-              )
-            );
+          );
     operation
       .pipe(
         finalize(() => {

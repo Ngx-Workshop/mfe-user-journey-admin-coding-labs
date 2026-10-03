@@ -1,9 +1,26 @@
+<ngx-particle-header class="particle-header">
+  @if (version(); as current) {
+  <h1>Version {{ current.versionNumber }}</h1>
+  }
+</ngx-particle-header>
+<div class="particle-header-action-bar">
+  <a matButton="filled" [routerLink]="['../..']"
+    ><mat-icon>arrow_back</mat-icon>Challenge overview</a
+  >
+</div>
 <section class="page">
   <div class="wrapper">
-    <a mat-button class="breadcrumb" [routerLink]="['../..']"
-      >← Challenge overview</a
-    >
-    @if (loading()) {
+    @if (version(); as current) {
+    <p class="eyebrow">
+      Version history · {{ current.isDraft ? 'Draft snapshot' :
+      'Published snapshot' }}
+    </p>
+    <p class="subtitle">
+      Read-only inspection · {{ current.language === 'typescript' ?
+      'TypeScript' : 'JavaScript' }} @if (current.publishedAt) { ·
+      Published {{ current.publishedAt | date:'medium' }} }
+    </p>
+    } @if (loading()) {
     <div class="state" role="status">
       <mat-spinner diameter="32" aria-label="Loading version" />
       <p>Loading version…</p>
@@ -15,20 +32,6 @@
       <button mat-stroked-button (click)="load()">Try again</button>
     </div>
     } @else if (version(); as current) {
-    <header class="page-header">
-      <div>
-        <p class="eyebrow">
-          Version history · {{ current.isDraft ? 'Draft snapshot' :
-          'Published snapshot' }}
-        </p>
-        <h1>Version {{ current.versionNumber }}</h1>
-        <p class="subtitle">
-          Read-only inspection · {{ current.language === 'typescript'
-          ? 'TypeScript' : 'JavaScript' }} @if (current.publishedAt) {
-          · Published {{ current.publishedAt | date:'medium' }} }
-        </p>
-      </div>
-    </header>
     <section class="panel">
       <h2>Problem statement</h2>
       @if (current.promptMarkdown) {

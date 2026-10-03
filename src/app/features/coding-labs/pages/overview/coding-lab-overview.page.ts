@@ -9,12 +9,14 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
   MatSnackBar,
   MatSnackBarModule,
 } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
 import { finalize, forkJoin } from 'rxjs';
 import { CodingLabsApiClient } from '../../api/coding-labs-api-client.service';
 import { LabStatusChipComponent } from '../../components/lab-status-chip.component';
@@ -42,6 +44,8 @@ import {
     MatSnackBarModule,
     LabStatusChipComponent,
     VersionListComponent,
+    NgxParticleHeader,
+    MatIconModule,
   ],
   templateUrl: './coding-lab-overview.page.html',
   styleUrls: ['../journey.scss'],
