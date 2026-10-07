@@ -31,3 +31,20 @@ The shell emits Material component-ID collision warnings while loading remotes. 
 
 ## Context maintenance and next action
 Updated docs/architecture.md, docs/development.md, constitution version 1.1.0 and the feature index. No external repository changes or migrations are required. Review the working-tree diff and commit when ready.
+
+## Follow-up: published contracts and source/test relocation — 2026-10-07
+
+Migrated the model adapter to `@tmdjr/coding-labs-contracts` 0.0.6 and removed
+`src/app/contracts/coding-labs` and its generation command. Preserved the user's
+package/lockfile updates. Moved the feature into `src/app/coding-labs` and its
+CodeMirror component into `src/app/coding-labs/codemirror-editor`.
+
+Moved all eight specs into `testing/app`, mirroring application source paths.
+Updated imports, the route module, TypeScript test/application configuration and
+Karma discovery. Architecture checks now enforce the mirrored spec layout.
+No route URLs, federation exposure paths or runtime behavior changed.
+
+Verification: TypeScript test compilation passed; all 28 ChromeHeadless tests
+were discovered and passed from the new tree. Production and development builds
+passed. This structural follow-up did not repeat the prior browser smoke tests.
+README and architecture/development guidance reflect the new paths and package.

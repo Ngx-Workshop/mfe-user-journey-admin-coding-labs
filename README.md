@@ -19,6 +19,15 @@ Development builds replace environment.ts with environment.development.ts, whose
 - npm run build — production compilation.
 - npm run build -- --configuration development — local remote bundle.
 - npm test -- --watch=false --browsers=ChromeHeadless — behavior tests.
-- npm run contracts:generate — regenerate the local types from openapi.json.
+- npm run check:architecture — validate layer boundaries and source/test layout.
 
 See the [handoff](specs/001-challenge-authoring/handoff.md) for tested flows and deployment boundaries.
+
+## Source layout and contracts
+
+Application code lives in `src/app/coding-labs`, including the feature's
+`codemirror-editor` component. Unit specs live separately in `testing/app`,
+mirroring the directory layout beneath `src/app`.
+
+DTOs come from the pinned `@tmdjr/coding-labs-contracts` 0.0.6 package. Local
+generated contract copies and regeneration scripts are no longer used.

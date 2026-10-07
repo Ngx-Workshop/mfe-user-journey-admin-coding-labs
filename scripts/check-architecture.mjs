@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const failures = [];
@@ -10,7 +10,11 @@ function inspect(directory) {
       if (entry.name !== 'contracts') inspect(path);
       continue;
     }
-    if (!path.endsWith('.ts') || path.endsWith('.spec.ts')) continue;
+    if (path.endsWith('.spec.ts')) {
+      failures.push(`${path}: move application specs to the matching testing/app directory.`);
+      continue;
+    }
+    if (!path.endsWith('.ts')) continue;
     const source = readFileSync(path, 'utf8');
     const isApi = path.includes('/api/');
     const isStore = path.includes('/state/');
@@ -37,6 +41,16 @@ function inspect(directory) {
   }
 }
 inspect('src/app');
+function inspectTesting(directory) {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) { inspectTesting(path); continue; }
+    if (!path.endsWith('.spec.ts')) continue;
+    const source = path.replace(/^testing\//, 'src/').replace(/\.spec\.ts$/, '.ts');
+    if (!existsSync(source)) failures.push(`${path}: no matching application source at ${source}.`);
+  }
+}
+inspectTesting('testing/app');
 for (const message of advisories) console.log(`Note: ${message}`);
 if (failures.length) {
   for (const message of failures) console.error(message);
