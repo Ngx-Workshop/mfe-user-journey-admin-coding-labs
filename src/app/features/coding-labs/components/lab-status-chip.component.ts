@@ -1,9 +1,9 @@
+import { TitleCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   Input,
 } from '@angular/core';
-import { TitleCasePipe } from '@angular/common';
 import { LabStatus } from '../models/coding-labs.models';
 
 @Component({
@@ -11,13 +11,13 @@ import { LabStatus } from '../models/coding-labs.models';
   standalone: true,
   imports: [TitleCasePipe],
   template: `
-    <span class="status" [class]="statusClass">{{
+    <span class="lab-status-chip__status" [class]="statusClass">{{
       status | titlecase
     }}</span>
   `,
   styles: [
     `
-      .status {
+      .lab-status-chip__status {
         display: inline-block;
         white-space: nowrap;
         padding: 6px 12px;

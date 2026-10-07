@@ -3,12 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 export type TestResultDto = {
-    name: string;
-    suite: 'sample' | 'hidden';
-    status: 'passed' | 'failed' | 'error' | 'timeout';
-    durationMs: number;
-    actual?: (string | number | boolean | Record<string, any>) | null;
-    expected?: (string | number | boolean | Record<string, any>) | null;
-    message?: string;
+  name: string;
+  suite: 'sample' | 'hidden';
+  status: 'passed' | 'failed' | 'error' | 'timeout';
+  durationMs: number;
+  actual?: (string | number | boolean | Record<string, any>) | null;
+  expected?: (string | number | boolean | Record<string, any>) | null;
+  message?: string;
 };
-

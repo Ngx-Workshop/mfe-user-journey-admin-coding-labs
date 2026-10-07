@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'ngx-seed-mfe',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatButtonModule, RouterLink, RouterOutlet],
   template: `
-    <header class="header">
+    <header class="labs-app__header">
       <button mat-button [routerLink]="['/coding-labs']">
         Coding Labs
       </button>
@@ -18,7 +19,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
   `,
   styles: [
     `
-      .header {
+      .labs-app__header {
         display: flex;
         gap: 8px;
         padding: 8px 16px;

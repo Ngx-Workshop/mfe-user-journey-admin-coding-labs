@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type PublishVersionDto = {
-    expectedContentHash: string;
-    publishedBy: string;
-    notes?: string;
+  expectedContentHash: string;
+  publishedBy: string;
+  notes?: string;
 };
-

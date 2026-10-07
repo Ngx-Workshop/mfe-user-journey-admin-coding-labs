@@ -4,11 +4,10 @@
 /* eslint-disable */
 import type { TestResultDto } from './TestResultDto';
 export type VerificationDto = {
-    passed: boolean;
-    contentHash: string;
-    totalTests: number;
-    passedTests: number;
-    durationMs: number;
-    results: Array<TestResultDto>;
+  passed: boolean;
+  contentHash: string;
+  totalTests: number;
+  passedTests: number;
+  durationMs: number;
+  results: Array<TestResultDto>;
 };
-

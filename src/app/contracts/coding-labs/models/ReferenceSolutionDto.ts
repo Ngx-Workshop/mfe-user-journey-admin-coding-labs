@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type ReferenceSolutionDto = {
-    code: string;
-    notesMarkdown?: string;
+  code: string;
+  notesMarkdown?: string;
 };
-

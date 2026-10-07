@@ -41,19 +41,16 @@ import { synthwave84 } from '@fsegurai/codemirror-theme-synthwave-84';
 import { basicSetup } from 'codemirror';
 
 export type CodeMirrorLanguage =
-  | 'typescript'
-  | 'javascript'
-  | 'json'
-  | 'markdown';
+  'typescript' | 'javascript' | 'json' | 'markdown';
 
 @Component({
   selector: 'ngx-codemirror-editor',
   template: `
     <div
       #editorHost
-      class="editor-host"
+      class="code-editor__editor-host"
       [style.height.px]="heightPx"
-      [class.read-only]="readOnly"
+      [class.code-editor__editor-host--read-only]="readOnly"
     ></div>
   `,
   styles: [
@@ -61,15 +58,13 @@ export type CodeMirrorLanguage =
       :host {
         display: block;
       }
-
-      .editor-host {
+      .code-editor__editor-host {
         border: 1px solid #d6dbe3;
         border-radius: 8px;
         overflow: hidden;
         background: var(--mat-sys-surface, #000);
       }
-
-      .editor-host.read-only {
+      .code-editor__editor-host.code-editor__editor-host--read-only {
         opacity: 0.9;
       }
     `,

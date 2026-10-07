@@ -1,6 +1,6 @@
 # Constitution — Coding Labs admin remote
 
-Version: 1.0.0 · Adopted: 2026-09-30
+Version: 1.1.0 · Adopted: 2026-09-30 · Amended: 2026-10-07
 
 These are design requirements for future work, not a claim that every inherited
 seed implementation already satisfies them. Current gaps live in the development guide.
@@ -26,6 +26,13 @@ typed reactive forms, signals for local state, and RxJS for asynchronous flows.
 Prefer focused components and services; use `OnPush` where appropriate. Avoid
 introducing another state framework or weakening types without a demonstrated need.
 Keep Angular and federation shared versions aligned with the consuming shell.
+
+Use MVVM: orchestration components and page-scoped view models consume a singleton
+state layer, which alone coordinates the stateless HTTP adapter. Presentational
+components take inputs and emit intentions. Keep typed forms local to their page
+and cancel superseded read streams. Colocate templates and Sass in component
+TypeScript, name authored classes with BEM, and aim for about 230 lines per
+component (a guideline, not a hard limit).
 
 ## 4. Put data ownership on the server
 

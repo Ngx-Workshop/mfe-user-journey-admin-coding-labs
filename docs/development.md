@@ -10,6 +10,12 @@ npm start runs ng serve on 4201. npm run dev:bundle combines a development watch
 
 The existing federation identity/exposures and singleton versions are retained. Navigation uses relative routes so the shell mount prefix survives. The root App header is for standalone use; the host loads the Routes exposure.
 
+## Quality checks
+
+Run `npm run check:architecture`, `npm test -- --watch=false --browsers=ChromeHeadless`, and `npm run build`. Rebuild with `npm run build -- --configuration development` before using the existing local bundle server in the shell. Do not reload the shell while a production build temporarily occupies dist.
+
+The architecture check rejects direct HTTP-client use outside the API layer, direct API-adapter dependencies outside the store, external component template/style files and malformed BEM names. Component length above 230 is advisory. Regression coverage includes cancellation/retry, draft reuse/creation, hash sequencing, JSON errors, recoverable edits, publication locking, preview sanitization and extracted form-view wiring.
+
 ## Tests and contracts
 
 npm test -- --watch=false --browsers=ChromeHeadless uses installed Chrome. On macOS, CHROME_BIN may point to /Applications/Google Chrome.app/Contents/MacOS/Google Chrome.
@@ -20,6 +26,6 @@ Meaningful tests cover JSON round trips, malformed input, request credentials/ha
 
 ## Limitations
 
-No learner judge, attempt tracking, alternate language runtime or Angular component-test harness. Legacy unit/custom cases cannot be published until converted. Metadata creation precedes draft creation; if opening fails, the saved catalog lab remains recoverable. Inherited unused seed examples remain in source but are no longer compilation roots. Dependency audits report findings; no broad framework migration is included.
+No learner judge, attempt tracking, alternate language runtime or Angular component-test harness. Legacy unit/custom cases cannot be published until converted. Metadata creation precedes draft creation; if opening fails, the saved catalog lab remains recoverable. Unused seed CRUD examples have been removed. Dependency audits report findings; no broad framework migration is included.
 
 Production service deployment must provide auth and an isolated Docker runner; this task only verifies the local service through the hosted shell.

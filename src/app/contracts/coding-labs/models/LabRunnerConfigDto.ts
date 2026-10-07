@@ -3,9 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export type LabRunnerConfigDto = {
-    timeoutMs: number;
-    memoryMb?: number;
-    entryFnName?: string;
-    nodeVersion?: string;
+  timeoutMs: number;
+  memoryMb?: number;
+  entryFnName?: string;
+  nodeVersion?: string;
 };
-

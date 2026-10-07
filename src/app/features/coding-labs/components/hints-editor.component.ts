@@ -1,9 +1,9 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  inject,
   Component,
   forwardRef,
+  inject,
 } from '@angular/core';
 import {
   ControlValueAccessor,
@@ -26,10 +26,13 @@ import { MatInputModule } from '@angular/material/input';
     MatInputModule,
   ],
   template: `
-    <div class="hints">
+    <div class="hints-editor__hints">
       @for (hint of hints; track $index) {
-        <div class="row">
-          <mat-form-field appearance="outline" class="field">
+        <div class="hints-editor__row">
+          <mat-form-field
+            appearance="outline"
+            class="hints-editor__field"
+          >
             <mat-label>Hint {{ $index + 1 }}</mat-label>
             <input
               matInput
@@ -73,35 +76,32 @@ import { MatInputModule } from '@angular/material/input';
         (click)="addHint()"
         [disabled]="disabled"
       >
-        <mat-icon>add</mat-icon>
-        Add Hint
+        <mat-icon>add</mat-icon> Add Hint
       </button>
     </div>
   `,
   styles: [
     `
-      .hints {
+      .hints-editor__hints {
         display: grid;
         gap: 8px;
       }
-
-      .row {
+      .hints-editor__row {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto auto auto;
         gap: 8px;
         align-items: center;
       }
-
       @media (max-width: 600px) {
-        .row {
+        .hints-editor__row {
           grid-template-columns: repeat(3, auto);
           justify-content: start;
         }
-        .field {
+        .hints-editor__field {
           grid-column: 1 / -1;
         }
       }
-      .field {
+      .hints-editor__field {
         width: 100%;
       }
     `,

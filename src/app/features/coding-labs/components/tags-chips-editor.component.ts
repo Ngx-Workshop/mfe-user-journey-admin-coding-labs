@@ -1,22 +1,22 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  inject,
   Component,
   Input,
   forwardRef,
+  inject,
 } from '@angular/core';
 import {
   ControlValueAccessor,
   FormsModule,
   NG_VALUE_ACCESSOR,
 } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
 import {
   MatChipInputEvent,
   MatChipsModule,
 } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 
 @Component({
@@ -30,7 +30,10 @@ import { MatInputModule } from '@angular/material/input';
     MatInputModule,
   ],
   template: `
-    <mat-form-field appearance="outline" class="tags-field">
+    <mat-form-field
+      appearance="outline"
+      class="tags-chips-editor__tags-field"
+    >
       <mat-label>{{ label }}</mat-label>
       <mat-chip-grid #chipGrid>
         @for (tag of tags; track tag) {
@@ -53,7 +56,7 @@ import { MatInputModule } from '@angular/material/input';
   `,
   styles: [
     `
-      .tags-field {
+      .tags-chips-editor__tags-field {
         width: 100%;
       }
     `,
@@ -67,9 +70,7 @@ import { MatInputModule } from '@angular/material/input';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TagsChipsEditorComponent
-  implements ControlValueAccessor
-{
+export class TagsChipsEditorComponent implements ControlValueAccessor {
   @Input() label = 'Tags';
   @Input() placeholder = 'Add tag';
 

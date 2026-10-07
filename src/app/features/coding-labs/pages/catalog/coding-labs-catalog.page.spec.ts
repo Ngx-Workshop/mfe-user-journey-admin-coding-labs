@@ -1,16 +1,16 @@
 import { TestBed } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   ActivatedRoute,
   convertToParamMap,
   Router,
 } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject, of } from 'rxjs';
-import { CodingLabsCatalogPage } from './coding-labs-catalog.page';
+import { of, Subject } from 'rxjs';
 import { CodingLabsApiClient } from '../../api/coding-labs-api-client.service';
 import { LabEntity } from '../../models/coding-labs.models';
+import { CodingLabsCatalogViewModel } from './coding-labs-catalog.view-model';
 
-describe('Catalog request recovery', () => {
+describe('Catalog view model request recovery', () => {
   it('cancels an older search so it cannot replace newer results', () => {
     const oldRequest = new Subject<LabEntity[]>();
     const latestRequest = new Subject<LabEntity[]>();
@@ -37,7 +37,7 @@ describe('Catalog request recovery', () => {
       ],
     });
     const page = TestBed.runInInjectionContext(
-      () => new CodingLabsCatalogPage()
+      () => new CodingLabsCatalogViewModel()
     );
     page.reload();
     oldRequest.error(new Error('late failure'));

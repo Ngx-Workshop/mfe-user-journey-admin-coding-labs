@@ -1,12 +1,14 @@
+import { ComparatorEditorComponent } from './comparator-editor.component';
+import { JsonValueEditorComponent } from './json-value-editor.component';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  inject,
   Component,
   EventEmitter,
   Input,
   Output,
   forwardRef,
+  inject,
 } from '@angular/core';
 import {
   ControlValueAccessor,
@@ -14,11 +16,9 @@ import {
   NG_VALUE_ACCESSOR,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { CodemirrorEditorComponent } from '../../../shared/components/codemirror-editor/codemirror-editor.component';
 import { LabTestCaseDto } from '../models/coding-labs.models';
 import {
@@ -37,18 +37,21 @@ interface IoTestcaseJsonError {
   standalone: true,
   imports: [
     FormsModule,
+    ComparatorEditorComponent,
+    JsonValueEditorComponent,
     MatButtonModule,
-    MatCheckboxModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatSelectModule,
     CodemirrorEditorComponent,
   ],
   template: `
-    <div class="test-case">
-      <div class="row header">
-        <mat-form-field appearance="outline" class="name-field">
+    <div class="io-testcase-editor__test-case">
+      <div class="io-testcase-editor__row io-testcase-editor__header">
+        <mat-form-field
+          appearance="outline"
+          class="io-testcase-editor__name-field"
+        >
           <mat-label>Test name</mat-label>
           <input
             matInput
@@ -57,7 +60,6 @@ interface IoTestcaseJsonError {
             [disabled]="disabled"
           />
         </mat-form-field>
-
         <button
           mat-icon-button
           type="button"
@@ -68,101 +70,33 @@ interface IoTestcaseJsonError {
           <mat-icon>delete</mat-icon>
         </button>
       </div>
-
-      <div class="row comparator-row">
-        <mat-form-field appearance="outline">
-          <mat-label>Comparator</mat-label>
-          <mat-select
-            [ngModel]="comparator.kind"
-            (ngModelChange)="updateComparator('kind', $event)"
-            [disabled]="disabled"
-          >
-            <mat-option value="strictEqual">Exact value</mat-option>
-            <mat-option value="deepEqual"
-              >Deep equality (objects and arrays)</mat-option
-            >
-            <mat-option value="stringNormalized"
-              >Normalized text</mat-option
-            >
-            <mat-option value="numberTolerance"
-              >Number within tolerance</mat-option
-            >
-          </mat-select>
-        </mat-form-field>
-
-        @if (comparator.kind === 'numberTolerance') {
-          <mat-form-field appearance="outline">
-            <mat-label>Tolerance</mat-label>
-            <input
-              matInput
-              type="number"
-              [ngModel]="comparator.tolerance ?? 0"
-              (ngModelChange)="updateComparator('tolerance', +$event)"
-              [disabled]="disabled"
-            />
-          </mat-form-field>
-        }
-
-        @if (comparator.kind === 'stringNormalized') {
-          <mat-checkbox
-            [ngModel]="comparator.normalizeWhitespace ?? false"
-            (ngModelChange)="
-              updateComparator('normalizeWhitespace', $event)
-            "
-            [disabled]="disabled"
-          >
-            Normalize whitespace
-          </mat-checkbox>
-
-          <mat-checkbox
-            [ngModel]="comparator.ignoreCase ?? false"
-            (ngModelChange)="updateComparator('ignoreCase', $event)"
-            [disabled]="disabled"
-          >
-            Ignore case
-          </mat-checkbox>
-        }
+      <ngx-comparator-editor
+        [comparator]="comparator"
+        [disabled]="disabled"
+        (change)="updateComparator($event.key, $event.value)"
+      />
+      <div class="io-testcase-editor__json-grid">
+        <ngx-json-value-editor
+          label="Input JSON"
+          caption="Input JSON — passed as one argument"
+          [value]="inputJson"
+          [disabled]="disabled"
+          [error]="jsonErrors.inputJson"
+          (valueChange)="onInputJsonChange($event)"
+        />
+        <ngx-json-value-editor
+          label="Expected JSON"
+          [value]="expectedJson"
+          [disabled]="disabled"
+          [error]="jsonErrors.expectedJson"
+          (valueChange)="onExpectedJsonChange($event)"
+        />
       </div>
-
-      <div class="json-grid">
-        <div>
-          <label class="label"
-            >Input JSON — passed as one argument</label
-          >
-          <ngx-codemirror-editor
-            [language]="'json'"
-            [readOnly]="disabled"
-            [value]="inputJson"
-            label="Input JSON"
-            (valueChange)="onInputJsonChange($event)"
-          ></ngx-codemirror-editor>
-          @if (jsonErrors.inputJson) {
-            <p class="error" role="alert">
-              {{ jsonErrors.inputJson }}
-            </p>
-          }
-        </div>
-
-        <div>
-          <label class="label">Expected JSON</label>
-          <ngx-codemirror-editor
-            [language]="'json'"
-            [readOnly]="disabled"
-            [value]="expectedJson"
-            label="Expected JSON"
-            (valueChange)="onExpectedJsonChange($event)"
-          ></ngx-codemirror-editor>
-          @if (jsonErrors.expectedJson) {
-            <p class="error" role="alert">
-              {{ jsonErrors.expectedJson }}
-            </p>
-          }
-        </div>
-      </div>
-
       @if (showUnitTestCode) {
         <div>
-          <label class="label">Optional Unit Test Code</label>
+          <label class="io-testcase-editor__label"
+            >Optional Unit Test Code</label
+          >
           <ngx-codemirror-editor
             [language]="language"
             [readOnly]="disabled"
@@ -175,58 +109,50 @@ interface IoTestcaseJsonError {
   `,
   styles: [
     `
-      .test-case {
+      .io-testcase-editor__test-case {
         display: grid;
         gap: 12px;
         padding: 12px;
         border: 1px solid var(--mat-sys-outline-variant);
         border-radius: 8px;
       }
-
-      .row {
+      .io-testcase-editor__row {
         display: flex;
         gap: 12px;
         align-items: center;
       }
-
-      .header {
+      .io-testcase-editor__header {
         justify-content: space-between;
       }
-
       :host,
-      .json-grid > div {
+      .io-testcase-editor__json-grid > div {
         min-width: 0;
       }
-      .name-field {
+      .io-testcase-editor__name-field {
         min-width: 0;
         flex: 1;
       }
-
-      .comparator-row {
+      .io-testcase-editor__comparator-row {
         flex-wrap: wrap;
       }
-
-      .json-grid {
+      .io-testcase-editor__json-grid {
         display: grid;
         gap: 12px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
-
-      .label {
+      .io-testcase-editor__label {
         display: block;
         margin-bottom: 6px;
         font-size: 0.85rem;
         color: var(--mat-sys-on-surface-variant);
       }
-
-      .error {
+      .labs-journey__error {
         color: var(--mat-sys-error);
         font-size: 0.8rem;
         margin: 6px 0 0;
       }
-
       @media (max-width: 960px) {
-        .json-grid {
+        .io-testcase-editor__json-grid {
           grid-template-columns: 1fr;
         }
       }

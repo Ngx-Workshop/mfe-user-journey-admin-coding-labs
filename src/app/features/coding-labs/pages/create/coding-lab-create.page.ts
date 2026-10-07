@@ -1,41 +1,25 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
   inject,
-  signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import {
-  MatSnackBar,
-  MatSnackBarModule,
-} from '@angular/material/snack-bar';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { RouterLink } from '@angular/router';
 import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
-import { finalize } from 'rxjs';
-import { CODING_LABS_ACTOR_ID } from '../../../../config/coding-labs.config';
-import { CodingLabsApiClient } from '../../api/coding-labs-api-client.service';
 import { TagsChipsEditorComponent } from '../../components/tags-chips-editor.component';
-import { CreateLabDto } from '../../models/coding-labs.models';
-import {
-  apiError,
-  slugify,
-} from '../../utils/coding-labs-form.utils';
-import { entityId } from '../../utils/lab-entity.utils';
+
+import { CodingLabCreateViewModel } from './coding-lab-create.view-model';
 
 @Component({
   selector: 'ngx-coding-lab-create-page',
   standalone: true,
+  providers: [CodingLabCreateViewModel],
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -49,35 +33,40 @@ import { entityId } from '../../utils/lab-entity.utils';
     MatIconModule,
   ],
   template: `
-    <ngx-particle-header class="particle-header">
+    <ngx-particle-header class="labs-journey__particle-header">
       <h1>Create a coding lab</h1>
     </ngx-particle-header>
-    <div class="particle-header-action-bar">
+    <div class="labs-journey__particle-header-action-bar">
       <a matButton="filled" [routerLink]="['..']"
         ><mat-icon>arrow_back</mat-icon>All coding labs</a
       >
     </div>
-    <section class="page">
-      <div class="wrapper">
-        <header class="page-header">
+    <section class="labs-journey__page">
+      <div class="labs-journey__wrapper">
+        <header class="labs-journey__page-header">
           <div>
-            <p class="eyebrow">New challenge · Step 1 of 2</p>
+            <p class="labs-journey__eyebrow">
+              New challenge · Step 1 of 2
+            </p>
             <!-- <h1>Create a coding lab</h1> -->
-            <p class="subtitle">
+            <p class="labs-journey__subtitle">
               Start with the details. Next, you’ll write the problem,
               code, and test cases.
             </p>
           </div>
         </header>
-
-        @if (error()) {
-        <p class="banner error" role="alert">{{ error() }}</p>
+        @if (vm.error()) {
+          <p
+            class="labs-journey__banner labs-journey__banner--error"
+            role="alert"
+          >
+            {{ vm.error() }}
+          </p>
         }
-
         <form
-          class="form panel"
-          [formGroup]="form"
-          (ngSubmit)="submit()"
+          class="labs-journey__form labs-journey__panel"
+          [formGroup]="vm.form"
+          (ngSubmit)="vm.submit()"
         >
           <mat-form-field appearance="outline">
             <mat-label>Workshop ID</mat-label>
@@ -85,12 +74,13 @@ import { entityId } from '../../utils/lab-entity.utils';
             <mat-hint
               >The workshop this challenge belongs to.</mat-hint
             >
-            @if ( form.controls.workshopId.invalid &&
-            form.controls.workshopId.touched ) {
-            <mat-error>Workshop ID is required</mat-error>
+            @if (
+              vm.form.controls.workshopId.invalid &&
+              vm.form.controls.workshopId.touched
+            ) {
+              <mat-error>Workshop ID is required</mat-error>
             }
           </mat-form-field>
-
           <mat-form-field appearance="outline">
             <mat-label>Title</mat-label>
             <input
@@ -99,37 +89,38 @@ import { entityId } from '../../utils/lab-entity.utils';
               required
               maxlength="200"
             />
-            @if ( form.controls.title.invalid &&
-            form.controls.title.touched ) {
-            <mat-error>Title is required</mat-error>
+            @if (
+              vm.form.controls.title.invalid &&
+              vm.form.controls.title.touched
+            ) {
+              <mat-error>Title is required</mat-error>
             }
           </mat-form-field>
-
           <mat-form-field appearance="outline">
             <mat-label>Slug</mat-label>
             <input
               matInput
               formControlName="slug"
-              (input)="onSlugInput()"
+              (input)="vm.onSlugInput()"
             />
             <mat-hint
               >Generated from the title; you can customize
               it.</mat-hint
             >
-            @if ( form.controls.slug.invalid &&
-            form.controls.slug.touched ) {
-            <mat-error
-              >Use lowercase letters, numbers, and single
-              hyphens.</mat-error
-            >
+            @if (
+              vm.form.controls.slug.invalid &&
+              vm.form.controls.slug.touched
+            ) {
+              <mat-error
+                >Use lowercase letters, numbers, and single
+                hyphens.</mat-error
+              >
             }
           </mat-form-field>
-
           <ngx-tags-chips-editor
             formControlName="tags"
           ></ngx-tags-chips-editor>
-
-          <div class="row-2">
+          <div class="labs-journey__row-2">
             <mat-form-field appearance="outline">
               <mat-label>Difficulty</mat-label>
               <mat-select formControlName="difficulty">
@@ -139,7 +130,6 @@ import { entityId } from '../../utils/lab-entity.utils';
                 <mat-option value="hard">Hard</mat-option>
               </mat-select>
             </mat-form-field>
-
             <mat-form-field appearance="outline">
               <mat-label>Estimated minutes</mat-label>
               <input
@@ -156,18 +146,22 @@ import { entityId } from '../../utils/lab-entity.utils';
               >
             </mat-form-field>
           </div>
-
-          <div class="actions">
-            <a mat-button [routerLink]="['..']" [disabled]="saving()"
+          <div class="labs-journey__actions">
+            <a
+              mat-button
+              [routerLink]="['..']"
+              [disabled]="vm.saving()"
               >Cancel</a
             >
             <button
               mat-flat-button
-              type="submit"
-              [disabled]="saving()"
+              type="vm.submit"
+              [disabled]="vm.saving()"
             >
               {{
-                saving() ? 'Creating lab…' : 'Create and open editor'
+                vm.saving()
+                  ? 'Creating lab…'
+                  : 'Create and open editor'
               }}
             </button>
           </div>
@@ -175,111 +169,149 @@ import { entityId } from '../../utils/lab-entity.utils';
       </div>
     </section>
   `,
-  styleUrls: ['../journey.scss'],
+  styles: [
+    `
+      :host {
+        display: block;
+        min-width: 0;
+        color: var(--mat-sys-on-surface);
+      }
+      .labs-journey__page {
+        display: flex;
+        justify-content: center;
+        padding: 0 16px;
+      }
+      .labs-journey__wrapper {
+        flex: 0 1 clamp(480px, 70vw, 1400px);
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 28px 0 64px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+        align-content: start;
+      }
+      .labs-journey__page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .labs-journey__page-header > div {
+        min-width: 0;
+        flex: 1 1 280px;
+      }
+      h1 {
+        margin: 6px 0 12px;
+        font-size: clamp(1.65rem, 2.5vw, 2.2rem);
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+      }
+      p {
+        line-height: 1.6;
+      }
+      .labs-journey__eyebrow {
+        margin: 0;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        color: var(--mat-sys-primary);
+        text-transform: uppercase;
+      }
+      .labs-journey__subtitle {
+        color: var(--mat-sys-on-surface-variant);
+        margin: 0;
+      }
+      .labs-journey__panel {
+        padding: 24px;
+        border: 1px solid var(--mat-sys-outline-variant);
+        border-radius: 16px;
+        min-width: 0;
+      }
+      .labs-journey__actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .labs-journey__form {
+        display: grid;
+        gap: 20px;
+      }
+      .labs-journey__row-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+      }
+      mat-form-field {
+        width: 100%;
+        min-width: 0;
+      }
+      .labs-journey__error {
+        color: var(--mat-sys-error);
+      }
+      .labs-journey__banner {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin: 0;
+        background: var(--mat-sys-secondary-container);
+        color: var(--mat-sys-on-secondary-container);
+      }
+      .labs-journey__banner.labs-journey__banner--error {
+        background: var(--mat-sys-error-container);
+        color: var(--mat-sys-on-error-container);
+      }
+      :where(a, button, summary, textarea):focus-visible {
+        outline: 2px solid var(--mat-sys-primary);
+        outline-offset: 4px;
+      }
+      @media (max-width: 700px) {
+        .labs-journey__wrapper {
+          padding-top: 20px;
+          gap: 20px;
+        }
+        .labs-journey__panel {
+          padding: 16px;
+        }
+        .labs-journey__row-2 {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 16px;
+        }
+        .labs-journey__page-header {
+          align-items: flex-start;
+        }
+      }
+      .labs-journey__wrapper > * {
+        min-width: 0;
+      }
+      .labs-journey__particle-header h1 {
+        font-size: 1.85rem;
+        font-weight: 100;
+        margin: 1.7rem 1rem;
+      }
+      .labs-journey__particle-header-action-bar {
+        position: sticky;
+        top: 56px;
+        height: 56px;
+        z-index: 5;
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        background: var(--mat-sys-primary);
+        align-items: center;
+        a,
+        button {
+          color: var(--mat-sys-on-primary);
+          background: var(--mat-sys-primary);
+          margin: 0 12px;
+        }
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodingLabCreatePage {
-  protected readonly route = inject(ActivatedRoute);
-  private readonly fb = inject(FormBuilder);
-  private readonly api = inject(CodingLabsApiClient);
-  private readonly router = inject(Router);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly actorId = inject(CODING_LABS_ACTOR_ID);
-  private readonly snackBar = inject(MatSnackBar);
-
-  readonly saving = signal(false);
-  readonly error = signal<string | null>(null);
-
-  readonly form = this.fb.group({
-    workshopId: this.fb.control('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-    title: this.fb.control('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-    slug: this.fb.control('', {
-      validators: [
-        Validators.required,
-        Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-      ],
-      nonNullable: true,
-    }),
-    tags: this.fb.control<string[]>([], { nonNullable: true }),
-    difficulty: this.fb.control<'intro' | 'easy' | 'medium' | 'hard'>(
-      'intro',
-      {
-        nonNullable: true,
-      }
-    ),
-    estimatedMinutes: this.fb.control<number | null>(null, [
-      Validators.min(1),
-      Validators.max(600),
-    ]),
-  });
-
-  private slugEdited = false;
-
-  constructor() {
-    this.form.controls.title.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((title) => {
-        if (this.slugEdited) return;
-        this.form.controls.slug.setValue(slugify(title), {
-          emitEvent: false,
-        });
-      });
-  }
-
-  onSlugInput(): void {
-    this.slugEdited = true;
-  }
-
-  submit(): void {
-    if (this.saving()) return;
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const value = this.form.getRawValue();
-    const dto: CreateLabDto = {
-      workshopId: value.workshopId,
-      slug: value.slug,
-      title: value.title,
-      tags: value.tags,
-      difficulty: value.difficulty,
-      estimatedMinutes: value.estimatedMinutes ?? undefined,
-      createdBy: this.actorId,
-    };
-
-    this.saving.set(true);
-    this.form.disable({ emitEvent: false });
-    this.error.set(null);
-
-    this.api
-      .createLab(dto)
-      .pipe(
-        finalize(() => {
-          this.saving.set(false);
-          this.form.enable({ emitEvent: false });
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: (lab) => {
-          const id = entityId(lab);
-          this.snackBar.open('Lab created', 'Dismiss', {
-            duration: 2200,
-          });
-          this.router.navigate(['..', id, 'editor'], {
-            relativeTo: this.route,
-          });
-        },
-        error: (error) => {
-          this.error.set(apiError(error, 'Failed to create lab.'));
-        },
-      });
-  }
+  readonly vm = inject(CodingLabCreateViewModel);
 }

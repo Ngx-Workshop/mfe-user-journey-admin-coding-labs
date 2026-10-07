@@ -4,16 +4,15 @@
 /* eslint-disable */
 import type { LabTestCaseDto } from './LabTestCaseDto';
 export type PublishedLabDto = {
-    labId: string;
-    versionId: string;
-    versionNumber: number;
-    title: string;
-    difficulty?: 'intro' | 'easy' | 'medium' | 'hard';
-    language: 'javascript' | 'typescript';
-    promptMarkdown: string;
-    hints: Array<string>;
-    starterCode: string;
-    sampleTests: Array<LabTestCaseDto>;
-    entryFnName?: string;
+  labId: string;
+  versionId: string;
+  versionNumber: number;
+  title: string;
+  difficulty?: 'intro' | 'easy' | 'medium' | 'hard';
+  language: 'javascript' | 'typescript';
+  promptMarkdown: string;
+  hints: Array<string>;
+  starterCode: string;
+  sampleTests: Array<LabTestCaseDto>;
+  entryFnName?: string;
 };
-

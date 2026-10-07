@@ -16,7 +16,12 @@ The backend owns persistence, validation, authorization, hidden tests, verificat
 | pages/overview and version-view | Metadata/history, pinned embed reference and immutable content inspection |
 | components/io-testcase-editor.component.ts | JSON input/output and comparator editing |
 | shared/components/codemirror-editor | Accessible code editor/CVA |
-| api/coding-labs-api-client.service.ts | All credentialed HTTP requests |
+| api/coding-labs-api-client.service.ts | Stateless credentialed HTTP adapter; consumed only by the store |
+| state/coding-labs.store.ts | Singleton server resources, draft selection, save/verify/publish sequencing |
+| pages/*/*.view-model.ts | Page-scoped UI state, typed forms, routing and lifetime-bound streams |
+| pages/editor/editor-*.component.ts | Focused form views and learner-only preview snapshots |
+| pages/editor/verification-results.component.ts | Input-only verification rendering |
+| components/comparator-editor.component.ts and json-value-editor.component.ts | Input/output-only test field views |
 | src/app/contracts/coding-labs | Generated local snapshot of service OpenAPI |
 | src/environments | Development API versus production gateway |
 
@@ -38,6 +43,14 @@ Document/learner repositories can use the overview's labId/pinnedVersionId refer
 
 References: [Marked](https://marked.js.org/), [Angular sanitization](https://angular.dev/best-practices/security).
 
-## Shared journey presentation
+## MVVM and component boundaries
 
-All five pages use component-scoped `pages/journey.scss` for the centered 70vw clamp wrapper, theme colors, page headings, panels, feedback and responsive table containment. Page navigation retains the shell mount prefix. Version inspection renders sanitized Markdown and expands individual sample/hidden cases. Catalog requests are debounced and superseded requests cancelled. See `specs/002-journey-polish/handoff.md` for browser evidence.
+The dependency direction is page → page-scoped view model → root CodingLabsStore → CodingLabsApiClient → HTTP. Only the store imports the HTTP adapter. The adapter owns no resource signals, cache or UI state. The store exposes read-only data/loading/error signals and cold load/command streams. Resource mutations stay private to the store.
+
+Each page provides its own view model. Form controls, unsaved state, navigation, confirmations and snackbars follow that page's lifetime. Replaceable reads use switchMap, handle errors inside the inner stream, and unsubscribe on destruction. This prevents stale route/search results and allows retry after failure. Commands are guarded against repeated clicks. Editor route refresh also cancels observation of any previous command.
+
+The store selects/reuses or creates drafts and saves before verification/publication. Typed command events report the saved hash even if a later verification fails. Publication uses the save response's hash. Form views receive the original typed controls and emit intentions; they do not inject the store or HTTP client. Preview receives only prompt, starter code and sample tests, with explicit signal updates after server patches and form edits. All components use OnPush.
+
+Templates and component-scoped Sass are inline in each component TypeScript file. Authored classes use BEM; responsive layout, theme tokens, focus indicators and the centered clamp wrapper are retained. Rules needed by a view are colocated with it. Avoid imported style-string arrays in this webpack pipeline: browser verification found the same generated constant substituted for distinct array entries. Explicit subscriptions to the shared Angular signal API avoid the shell/remote injection-context mismatch observed with an implicitly injected toSignal bridge. Federation sharing configuration remains unchanged.
+
+Use `npm run check:architecture` to check the HTTP/store boundary, inline views, BEM syntax and the advisory 230-line guideline. The test-case CVA is 233 lines to keep JSON parsing/error propagation together; other components are below the guideline. Unreachable seed CRUD demonstrations were removed.
