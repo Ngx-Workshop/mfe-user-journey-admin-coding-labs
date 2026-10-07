@@ -25,7 +25,7 @@ Update that dependency to consume a new published contract version. The feature
 model adapter imports its types directly; there are no local generated model
 copies or `contracts:generate` command.
 
-Specs live in `testing/app`, mirroring `src/app`. `tsconfig.spec.json` includes
+Specs live in `testing/app/features/coding-labs`, mirroring `src/app`. `tsconfig.spec.json` includes
 the testing tree and declarations; imported application code is compiled with
 the specs. The Karma builder resolves its include pattern relative to `src`, so
 `angular.json` explicitly uses `../testing/**/*.spec.ts`. The application build
@@ -39,3 +39,16 @@ Meaningful tests cover JSON round trips, malformed input, request credentials/ha
 No learner judge, attempt tracking, alternate language runtime or Angular component-test harness. Legacy unit/custom cases cannot be published until converted. Metadata creation precedes draft creation; if opening fails, the saved catalog lab remains recoverable. Unused seed CRUD examples have been removed. Dependency audits report findings; no broad framework migration is included.
 
 Production service deployment must provide auth and an isolated Docker runner; this task only verifies the local service through the hosted shell.
+
+## Source organization parity — 2026-10-07
+
+See [source organization](source-organization.md). Run `npm run check:layout`,
+the full ChromeHeadless suite, and a production build after relocating files.
+Test include selectors now use `../testing/app/features/coding-labs/`.
+
+Verified: 28 ChromeHeadless tests, application/spec TypeScript checks,
+layout checks and production compilation pass. Builds used isolated
+`/tmp/admin-layout-coding-labs-production` output, preserving watched bundles.
+All existing TypeScript files were compared against HEAD: only relative path
+strings changed. Hosted browser/service integration was not rerun for this
+mechanical reorganization.

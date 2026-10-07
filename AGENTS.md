@@ -38,3 +38,7 @@ All links above resolve within this checkout. Do not assume a sibling repository
 
 This is a Markdown workflow inspired by Spec Kit. It does not install Spec Kit,
 register slash commands, or require a particular AI tool.
+
+Source layout: follow [the shared convention](docs/source-organization.md) and run
+`npm run check:layout` after moving files. Feature code belongs under
+`src/app/features/coding-labs`; test folders mirror the source folders.

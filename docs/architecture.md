@@ -10,12 +10,12 @@ The backend owns persistence, validation, authorization, hidden tests, verificat
 
 | Source | Purpose |
 | --- | --- |
-| src/app/coding-labs/pages/catalog | Search/filter/archive and relative navigation |
+| src/app/features/coding-labs/pages/catalog | Search/filter/archive and relative navigation |
 | pages/create | Workshop metadata creation, then navigate into editor |
 | pages/editor | Typed reactive form, four authoring tabs, save/verify/publish, results and unsaved protection |
 | pages/overview and version-view | Metadata/history, pinned embed reference and immutable content inspection |
 | components/io-testcase-editor.component.ts | JSON input/output and comparator editing |
-| src/app/coding-labs/codemirror-editor | Accessible code editor/CVA |
+| src/app/features/coding-labs/components/codemirror-editor | Accessible code editor/CVA |
 | api/coding-labs-api-client.service.ts | Stateless credentialed HTTP adapter; consumed only by the store |
 | state/coding-labs.store.ts | Singleton server resources, draft selection, save/verify/publish sequencing |
 | pages/*/*.view-model.ts | Page-scoped UI state, typed forms, routing and lifetime-bound streams |
@@ -23,8 +23,11 @@ The backend owns persistence, validation, authorization, hidden tests, verificat
 | pages/editor/verification-results.component.ts | Input-only verification rendering |
 | components/comparator-editor.component.ts and json-value-editor.component.ts | Input/output-only test field views |
 | @tmdjr/coding-labs-contracts@0.0.6 | Published DTO types; imported through the feature model adapter |
-| testing/app | Specs mirroring src/app, separate from application sources |
+| testing/app/features/coding-labs | Specs mirroring src/app, separate from application sources |
 | src/environments | Development API versus production gateway |
+
+Paths abbreviated to `pages/`, `components/`, `api/`, `state/` or `models/` are
+relative to `src/app/features/coding-labs`.
 
 ## Authoring behavior
 
@@ -58,13 +61,22 @@ Use `npm run check:architecture` to check the HTTP/store boundary, inline views,
 
 ## Source and test layout
 
-The feature root is `src/app/coding-labs`. Its CodeMirror CVA lives at
-`src/app/coding-labs/codemirror-editor/codemirror-editor.component.ts`.
-All eight spec files live under `testing/app` with the same relative directories
-as their corresponding files in `src/app`. Specs import application modules;
+The feature root is `src/app/features/coding-labs`. Its CodeMirror CVA lives at
+`src/app/features/coding-labs/components/codemirror-editor/codemirror-editor.component.ts`.
+Seven feature spec files live under `testing/app/features/coding-labs`; the app
+suite remains at `testing/app/app.spec.ts`. All mirror the directories of their
+corresponding files in `src/app`. Specs import application modules;
 application modules do not import the testing tree.
 
 `models/coding-labs.models.ts` adapts the published `@tmdjr/coding-labs-contracts`
 0.0.6 types with local entity/query types. Generated contract copies and their
 local generation command have been removed. The existing `openapi.json` remains
 a reference snapshot, not a compilation or type-generation input.
+
+## Uniform admin source layout — 2026-10-07
+
+Follow [the shared source convention](source-organization.md). Feature code lives
+under `src/app/features/coding-labs`; page-only views/models stay beside their
+page, reusable views live under `components`, stateless adapters under `api`, and
+singleton orchestration under `state`. Tests mirror the responsibility folders.
+The app entry files and external integration contracts are preserved.

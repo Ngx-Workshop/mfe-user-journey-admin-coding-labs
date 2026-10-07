@@ -25,8 +25,8 @@ See the [handoff](specs/001-challenge-authoring/handoff.md) for tested flows and
 
 ## Source layout and contracts
 
-Application code lives in `src/app/coding-labs`, including the feature's
-`codemirror-editor` component. Unit specs live separately in `testing/app`,
+Application code lives in `src/app/features/coding-labs`, including the feature's
+`codemirror-editor` component. Unit specs live separately in `testing/app/features/coding-labs`,
 mirroring the directory layout beneath `src/app`.
 
 DTOs come from the pinned `@tmdjr/coding-labs-contracts` 0.0.6 package. Local
