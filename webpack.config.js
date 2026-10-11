@@ -18,6 +18,11 @@ module.exports = withModuleFederationPlugin({
       strictVersion: true,
       requiredVersion: '21.1.0',
     },
+    '@angular/core/rxjs-interop': {
+      singleton: true,
+      strictVersion: true,
+      requiredVersion: '21.1.0',
+    },
     '@angular/common': {
       singleton: true,
       strictVersion: true,
