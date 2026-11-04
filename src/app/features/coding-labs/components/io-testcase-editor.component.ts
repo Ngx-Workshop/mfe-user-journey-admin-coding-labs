@@ -109,11 +109,15 @@ interface IoTestcaseJsonError {
   `,
   styles: [
     `
+      .io-testcase-editor__test-case > * { min-width: 0; }
       .io-testcase-editor__test-case {
+        box-sizing: border-box;
+        min-width: 0;
+        grid-template-columns: minmax(0, 1fr);
         display: grid;
         gap: 12px;
         padding: 12px;
-        border: 1px solid var(--mat-sys-outline-variant);
+        border: 1px solid var(--ngx-color-border);
         border-radius: 8px;
       }
       .io-testcase-editor__row {
@@ -144,16 +148,16 @@ interface IoTestcaseJsonError {
         display: block;
         margin-bottom: 6px;
         font-size: 0.85rem;
-        color: var(--mat-sys-on-surface-variant);
+        color: var(--ngx-color-muted);
       }
       .labs-journey__error {
-        color: var(--mat-sys-error);
+        color: var(--ngx-color-error);
         font-size: 0.8rem;
         margin: 6px 0 0;
       }
       @media (max-width: 960px) {
         .io-testcase-editor__json-grid {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
       }
     `,

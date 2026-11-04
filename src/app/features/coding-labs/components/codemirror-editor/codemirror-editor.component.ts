@@ -57,12 +57,14 @@ export type CodeMirrorLanguage =
     `
       :host {
         display: block;
+        min-width: 0;
+        max-width: 100%;
       }
       .code-editor__editor-host {
-        border: 1px solid #d6dbe3;
-        border-radius: 8px;
+        border: 1px solid var(--ngx-color-border);
+        border-radius: var(--ngx-radius-sm);
         overflow: hidden;
-        background: var(--mat-sys-surface, #000);
+        background: var(--ngx-color-surface);
       }
       .code-editor__editor-host.code-editor__editor-host--read-only {
         opacity: 0.9;

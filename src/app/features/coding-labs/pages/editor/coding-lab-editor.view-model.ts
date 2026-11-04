@@ -280,7 +280,7 @@ export class CodingLabEditorViewModel {
             this.notice.set(
               verification.passed
                 ? 'All tests passed. This draft is ready to publish.'
-                : 'Some tests did not pass. Review the results below.'
+                : 'Some tests did not pass. Review Publish checks.'
             );
           } else if (event.kind === 'published') {
             this.published.set(true);

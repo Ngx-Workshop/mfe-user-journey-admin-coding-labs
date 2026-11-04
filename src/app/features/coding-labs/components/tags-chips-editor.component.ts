@@ -56,7 +56,9 @@ import { MatInputModule } from '@angular/material/input';
   `,
   styles: [
     `
+      :host { display: block; min-width: 0; }
       .tags-chips-editor__tags-field {
+        min-width: 0;
         width: 100%;
       }
     `,

@@ -1,3 +1,7 @@
+import { NgxActionBar, NgxCodeBlock } from '@tmdjr/ngx-workshop-design-system';
+import { LabsPanelComponent } from '../../components/labs-panel.component';
+import { LabsViewportDirective } from '../../components/labs-viewport.directive';
+import { NgxButton } from '@tmdjr/ngx-workshop-design-system';
 import { DatePipe, JsonPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -8,38 +12,26 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
-import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
-import { CodemirrorEditorComponent } from '../../components/codemirror-editor/codemirror-editor.component';
 
 import { CodingLabVersionViewViewModel } from './coding-lab-version-view.view-model';
 
 @Component({
+  host: { class: 'ngx-design-system ngx-labs-design' },
   selector: 'ngx-coding-lab-version-view-page',
   standalone: true,
   providers: [CodingLabVersionViewViewModel],
-  imports: [
+  imports: [NgxActionBar, NgxCodeBlock, LabsPanelComponent, LabsViewportDirective,NgxButton,
     DatePipe,
     JsonPipe,
     RouterLink,
     MatButtonModule,
     MatProgressSpinnerModule,
-    CodemirrorEditorComponent,
-    NgxParticleHeader,
     MatIconModule,
   ],
   template: `
-    <ngx-particle-header class="labs-journey__particle-header">
-      @if (vm.version(); as current) {
-        <h1>Version {{ current.versionNumber }}</h1>
-      }
-    </ngx-particle-header>
-    <div class="labs-journey__particle-header-action-bar">
-      <a matButton="filled" [routerLink]="['../..']"
-        ><mat-icon>arrow_back</mat-icon>Challenge overview</a
-      >
-    </div>
+    <ngx-action-bar [heading]="'Version ' + (vm.version()?.versionNumber || '')"><a mat-button ngxButton surface="outline" [routerLink]="['../..']"><mat-icon>arrow_back</mat-icon>Challenge overview</a></ngx-action-bar>
     <section class="labs-journey__page">
-      <div class="labs-journey__wrapper">
+      <div class="labs-journey__wrapper" ngxLabsViewport><ngx-labs-panel heading="Version content" eyebrow="CODING LABS / SNAPSHOT" background="grid">
         @if (vm.version(); as current) {
           <p class="labs-journey__eyebrow">
             Version history ·
@@ -73,7 +65,7 @@ import { CodingLabVersionViewViewModel } from './coding-lab-version-view.view-mo
           >
             <h1>Version unavailable</h1>
             <p>{{ vm.error() }}</p>
-            <button mat-stroked-button (click)="vm.load()">
+            <button mat-stroked-button ngxButton surface="outline" (click)="vm.load()">
               Try again
             </button>
           </div>
@@ -97,12 +89,7 @@ import { CodingLabVersionViewViewModel } from './coding-lab-version-view.view-mo
               Learner visible · Entry function:
               {{ current.runner.entryFnName || 'solve' }}
             </p>
-            <ngx-codemirror-editor
-              label="Starter code (read only)"
-              [value]="current.starterCode || ''"
-              [language]="current.language || 'typescript'"
-              [readOnly]="true"
-            />
+            <ngx-code-block [code]="current.starterCode || ''" [language]="current.language || 'typescript'" [wrap]="true" />
           </section>
           @for (
             suite of [
@@ -131,11 +118,11 @@ import { CodingLabVersionViewViewModel } from './coding-lab-version-view.view-mo
                     <div class="labs-journey__value-grid">
                       <div>
                         <h3>Input</h3>
-                        <pre>{{ test.input | json }}</pre>
+                        <ngx-code-block [code]="(test.input | json) || \'null\'" language="json" [wrap]="true" />
                       </div>
                       <div>
                         <h3>Expected result</h3>
-                        <pre>{{ test.expected | json }}</pre>
+                        <ngx-code-block [code]="(test.expected | json) || \'null\'" language="json" [wrap]="true" />
                       </div>
                     </div>
                     <p class="labs-journey__muted">
@@ -158,12 +145,12 @@ import { CodingLabVersionViewViewModel } from './coding-lab-version-view.view-mo
                     <p class="labs-journey__muted">
                       Legacy test definition
                     </p>
-                    <pre>{{ test | json }}</pre>
+                    <ngx-code-block [code]="(test | json) || \'null\'" language="json" [wrap]="true" />
                   }
                 </details>
               } @empty {
                 <p class="labs-journey__muted">
-                  No tests in this vm.version.
+                  No tests in this version.
                 </p>
               }
             </section>
@@ -202,7 +189,7 @@ import { CodingLabVersionViewViewModel } from './coding-lab-version-view.view-mo
                 </p>
               </div>
               <button
-                mat-stroked-button
+                mat-stroked-button ngxButton surface="outline"
                 (click)="vm.showReference.set(!vm.showReference())"
                 [attr.aria-expanded]="vm.showReference()"
                 aria-controls="reference-content"
@@ -216,12 +203,7 @@ import { CodingLabVersionViewViewModel } from './coding-lab-version-view.view-mo
             </div>
             @if (vm.showReference()) {
               <div id="reference-content">
-                <ngx-codemirror-editor
-                  label="Reference solution (read only)"
-                  [value]="current.referenceSolution?.code || ''"
-                  [language]="current.language || 'typescript'"
-                  [readOnly]="true"
-                />
+                <ngx-code-block [code]="current.referenceSolution?.code || ''" [language]="current.language || 'typescript'" [wrap]="true" />
                 @if (current.referenceSolution?.notesMarkdown) {
                   <div
                     class="labs-journey__prose"
@@ -236,182 +218,43 @@ import { CodingLabVersionViewViewModel } from './coding-lab-version-view.view-mo
             }
           </section>
         }
-      </div>
+      </ngx-labs-panel></div>
     </section>
   `,
-  styles: [
-    `
-      :host {
-        display: block;
-        min-width: 0;
-        color: var(--mat-sys-on-surface);
-      }
-      .labs-journey__page {
-        display: flex;
-        justify-content: center;
-        padding: 0 16px;
-      }
-      .labs-journey__wrapper {
-        flex: 0 1 clamp(480px, 70vw, 1400px);
-        min-width: 0;
-        max-width: 100%;
-        box-sizing: border-box;
-        padding: 28px 0 64px;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 24px;
-        align-content: start;
-      }
-      .labs-journey__section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
-      }
-      h1 {
-        margin: 6px 0 12px;
-        font-size: clamp(1.65rem, 2.5vw, 2.2rem);
-        line-height: 1.25;
-        overflow-wrap: anywhere;
-      }
-      h2 {
-        margin: 0 0 12px;
-        font-size: 1.3rem;
-        line-height: 1.4;
-      }
-      h3 {
-        font-size: 1rem;
-        line-height: 1.5;
-      }
-      p {
-        line-height: 1.6;
-      }
-      .labs-journey__eyebrow {
-        margin: 0;
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        color: var(--mat-sys-primary);
-        text-transform: uppercase;
-      }
-      .labs-journey__subtitle,
-      .labs-journey__muted {
-        color: var(--mat-sys-on-surface-variant);
-        margin: 0;
-      }
-      .labs-journey__panel {
-        padding: 24px;
-        border: 1px solid var(--mat-sys-outline-variant);
-        border-radius: 16px;
-        min-width: 0;
-      }
-      .labs-journey__form {
-        display: grid;
-        gap: 20px;
-      }
-      .labs-journey__meta-grid,
-      .labs-journey__value-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 20px;
-      }
-      .labs-journey__state {
-        min-height: 180px;
-        display: grid;
-        place-content: center;
-        justify-items: center;
-        text-align: center;
-        gap: 12px;
-        padding: 24px;
-      }
-      .labs-journey__state h2,
-      .labs-journey__state p {
-        margin: 0;
-      }
-      pre {
-        box-sizing: border-box;
-        max-width: 100%;
-        overflow: auto;
-        padding: 16px;
-        border-radius: 10px;
-        background: var(--mat-sys-surface-container-low);
-        font-size: 0.875rem;
-        line-height: 1.6;
-      }
-      .labs-journey__metadata {
-        margin: 0;
-      }
-      .labs-journey__metadata dt {
-        color: var(--mat-sys-on-surface-variant);
-        font-size: 0.8rem;
-        margin-bottom: 6px;
-      }
-      .labs-journey__metadata dd {
-        margin: 0;
-        overflow-wrap: anywhere;
-      }
-      .labs-journey__prose {
-        line-height: 1.8;
-        overflow-wrap: anywhere;
-      }
-      details {
-        border: 1px solid var(--mat-sys-outline-variant);
-        border-radius: 12px;
-        padding: 16px;
-        min-width: 0;
-      }
-      summary {
-        cursor: pointer;
-        font-weight: 600;
-        line-height: 1.6;
-      }
-      :where(a, button, summary, textarea):focus-visible {
-        outline: 2px solid var(--mat-sys-primary);
-        outline-offset: 4px;
-      }
-      @media (max-width: 700px) {
-        .labs-journey__wrapper {
-          padding-top: 20px;
-          gap: 20px;
-        }
-        .labs-journey__panel {
-          padding: 16px;
-        }
-        .labs-journey__meta-grid,
-        .labs-journey__value-grid {
-          grid-template-columns: minmax(0, 1fr);
-          gap: 16px;
-        }
-      }
-      .labs-journey__wrapper > *,
-      .labs-journey__section-header > div {
-        min-width: 0;
-      }
-      .labs-journey__particle-header h1 {
-        font-size: 1.85rem;
-        font-weight: 100;
-        margin: 1.7rem 1rem;
-      }
-      .labs-journey__particle-header-action-bar {
-        position: sticky;
-        top: 56px;
-        height: 56px;
-        z-index: 5;
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        background: var(--mat-sys-primary);
-        align-items: center;
-        a,
-        button {
-          color: var(--mat-sys-on-primary);
-          background: var(--mat-sys-primary);
-          margin: 0 12px;
-        }
-      }
-    `,
-  ],
+  styles: [`
+    :host { display: block; min-width: 0; background: var(--ngx-color-canvas); color: var(--ngx-color-text); }
+    ngx-action-bar { --ngx-action-bar-top: var(--labs-toolbar-top, 96px); }
+    .labs-journey__page { padding: 1rem; }
+    .labs-journey__wrapper { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 0; gap: 1rem; }
+    .labs-journey__panel { min-width: 0; padding: 0; }
+    .labs-journey__section-header, .labs-journey__actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    h1, h2, h3, p { overflow-wrap: anywhere; }
+    h2 { font-family: var(--ngx-font-heading); font-size: 1rem; margin: 0 0 8px; }
+    h3 { font-size: 0.85rem; }
+    p { font-size: 0.85rem; line-height: 1.6; }
+    .labs-journey__muted, .labs-journey__subtitle { color: var(--ngx-color-muted); }
+    .labs-journey__eyebrow { color: var(--ngx-color-primary); font: var(--ngx-font-label); font-size: 0.65rem; }
+    .labs-journey__state { display: grid; justify-items: center; text-align: center; gap: 8px; padding: 16px; }
+    .labs-journey__banner { margin: 0; padding: 8px 12px; border-left: 2px solid var(--ngx-color-primary); background: var(--ngx-color-surface-high); }
+    .labs-journey__banner--error { color: var(--ngx-color-error); border-color: currentColor; }
+    .labs-journey__form { display: grid; gap: 12px; }
+    .labs-journey__meta-grid, .labs-journey__value-grid, .labs-journey__row-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .labs-journey__metadata { margin: 12px 0; }
+    .labs-journey__metadata dt { color: var(--ngx-color-muted); font-size: 0.7rem; }
+    .labs-journey__metadata dd { margin: 4px 0 12px; overflow-wrap: anywhere; }
+    mat-form-field { width: 100%; min-width: 0; }
+    details { border: 1px solid var(--ngx-color-border); padding: 8px; margin-block: 8px; min-width: 0; }
+    summary { cursor: pointer; font-size: 0.85rem; }
+    .labs-journey__prose { overflow-wrap: anywhere; line-height: 1.65; }
+    :where(a, button, summary):focus-visible { outline: 2px solid var(--ngx-color-primary); outline-offset: 2px; }
+    @media (max-width: 720px) {
+      ngx-action-bar { --ngx-action-bar-top: var(--labs-toolbar-top, 76px); }
+      ngx-action-bar a, ngx-action-bar button { min-width: 0; padding-inline: 8px; font-size: 0.7rem; }
+      .labs-journey__page { padding: 0.5rem; }
+      .labs-journey__meta-grid, .labs-journey__value-grid, .labs-journey__row-2 { grid-template-columns: minmax(0, 1fr); }
+    }
+
+  `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodingLabVersionViewPage {

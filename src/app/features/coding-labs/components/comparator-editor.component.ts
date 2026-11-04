@@ -25,7 +25,7 @@ import { ComparatorDto } from '../models/coding-labs.models';
     <div class="comparator-editor__fields">
       <mat-form-field appearance="outline">
         <mat-label>Comparator</mat-label>
-        <mat-select
+        <mat-select panelClass="ngx-design-system-overlay ngx-select-panel"
           [ngModel]="comparator.kind"
           (ngModelChange)="update('kind', $event)"
           [disabled]="disabled"
@@ -74,6 +74,7 @@ import { ComparatorDto } from '../models/coding-labs.models';
   `,
   styles: [
     `
+      mat-form-field { min-width: 0; width: 100%; }
       .comparator-editor__fields {
         display: flex;
         flex-wrap: wrap;

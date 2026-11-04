@@ -1,50 +1,10 @@
-import { TitleCasePipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { NgxInlineStatus } from '@tmdjr/ngx-workshop-design-system';
 import { LabStatus } from '../models/coding-labs.models';
-
 @Component({
-  selector: 'ngx-lab-status-chip',
-  standalone: true,
-  imports: [TitleCasePipe],
-  template: `
-    <span class="lab-status-chip__status" [class]="statusClass">{{
-      status | titlecase
-    }}</span>
-  `,
-  styles: [
-    `
-      .lab-status-chip__status {
-        display: inline-block;
-        white-space: nowrap;
-        padding: 6px 12px;
-        border-radius: 999px;
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-      .status-draft {
-        background: var(--mat-sys-secondary-container);
-        color: var(--mat-sys-on-secondary-container);
-      }
-      .status-published {
-        background: var(--mat-sys-tertiary-container);
-        color: var(--mat-sys-on-tertiary-container);
-      }
-      .status-archived {
-        background: var(--mat-sys-surface-container-highest);
-        color: var(--mat-sys-on-surface-variant);
-      }
-    `,
-  ],
+  selector: 'ngx-lab-status-chip', imports: [NgxInlineStatus],
+  template: `<ngx-inline-status [label]="status === 'published' ? 'Published' : status === 'archived' ? 'Archived' : 'Draft'" [tone]="status === 'published' ? 'success' : status === 'draft' ? 'warning' : 'neutral'" />`,
+  styles: [`:host { display: inline-block; white-space: nowrap; }`],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LabStatusChipComponent {
-  @Input() status: LabStatus = 'draft';
-
-  get statusClass(): string {
-    return `status-${this.status}`;
-  }
-}
+export class LabStatusChipComponent { @Input() status: LabStatus = 'draft'; }

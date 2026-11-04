@@ -1,3 +1,8 @@
+import { signal } from '@angular/core';
+import { NgxActionBar, NgxInlineStatus } from '@tmdjr/ngx-workshop-design-system';
+import { LabsPanelComponent } from '../../components/labs-panel.component';
+import { LabsViewportDirective } from '../../components/labs-viewport.directive';
+import { NgxButton } from '@tmdjr/ngx-workshop-design-system';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,9 +13,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTabsModule } from '@angular/material/tabs';
 import { RouterLink } from '@angular/router';
-import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
 import { EditorCodeComponent } from './editor-code.component';
 import { EditorPreviewComponent } from './editor-preview.component';
 import { EditorProblemComponent } from './editor-problem.component';
@@ -20,16 +23,15 @@ import { VerificationResultsComponent } from './verification-results.component';
 import { CodingLabEditorViewModel } from './coding-lab-editor.view-model';
 
 @Component({
+  host: { class: 'ngx-design-system ngx-labs-design' },
   selector: 'ngx-coding-lab-editor-page',
   standalone: true,
   providers: [CodingLabEditorViewModel],
-  imports: [
+  imports: [NgxActionBar, NgxInlineStatus, LabsPanelComponent, LabsViewportDirective,NgxButton,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
     MatProgressSpinnerModule,
-    MatTabsModule,
-    NgxParticleHeader,
     MatIconModule,
     VerificationResultsComponent,
     EditorProblemComponent,
@@ -38,16 +40,45 @@ import { CodingLabEditorViewModel } from './coding-lab-editor.view-model';
     EditorPreviewComponent,
   ],
   template: `
-    <ngx-particle-header class="labs-journey__particle-header">
-      <h1>{{ vm.labTitle() }}</h1>
-    </ngx-particle-header>
-    <div class="labs-journey__particle-header-action-bar">
-      <a matButton="filled" [routerLink]="['..']"
-        ><mat-icon>arrow_back</mat-icon>Challenge overview</a
-      >
-    </div>
+    <ngx-action-bar [heading]="vm.labTitle() || 'Challenge studio'">
+      <ngx-inline-status ngxActionBarIndicators [label]="vm.published() ? 'Published · read only' : vm.dirty() ? 'Unsaved changes' : 'Draft · saved'" [tone]="vm.dirty() ? 'warning' : 'neutral'" />
+      <a mat-button ngxButton surface="outline" [routerLink]="['..']" aria-label="Challenge overview"><mat-icon>arrow_back</mat-icon><span class="lab-editor__back-label">Overview</span></a>
+      @if (vm.versionId() && !vm.loading()) {
+        <div class="labs-journey__actions">
+              <button
+                mat-stroked-button ngxButton surface="outline"
+                (click)="vm.saveDraft()"
+                [disabled]="!!vm.busy() || vm.published()"
+              >
+                {{ vm.busy() === 'save' ? 'Saving…' : 'Save draft' }}
+              </button>
+              <button
+                mat-stroked-button ngxButton surface="outline"
+                (click)="vm.verifyReference()"
+                [disabled]="!!vm.busy() || vm.published()"
+              >
+                {{
+                  vm.busy() === 'verify'
+                    ? 'Running tests…'
+                    : 'Verify solution'
+                }}
+              </button>
+              <button
+                mat-flat-button ngxButton surface="outline"
+                (click)="vm.publishDraft()"
+                [disabled]="!!vm.busy() || vm.published()"
+              >
+                {{
+                  vm.busy() === 'publish'
+                    ? 'Verifying & publishing…'
+                    : 'Publish'
+                }}
+              </button>
+            </div>
+      }
+    </ngx-action-bar>
     <section class="labs-journey__page">
-      <div class="labs-journey__wrapper lab-editor__editor-page">
+      <div class="labs-journey__wrapper lab-editor__editor-page" ngxLabsViewport>
         @if (vm.loading()) {
           <div class="labs-journey__state" role="status">
             <mat-spinner
@@ -59,59 +90,9 @@ import { CodingLabEditorViewModel } from './coding-lab-editor.view-model';
         } @else if (!vm.versionId()) {
           <div class="labs-journey__state" role="alert">
             <p>{{ vm.error() }}</p>
-            <button mat-button (click)="vm.load()">Retry</button>
+            <button mat-button ngxButton surface="glass" (click)="vm.load()">Retry</button>
           </div>
         } @else {
-          <header
-            class="lab-editor__editor-header labs-journey__page-header"
-          >
-            <div>
-              <p class="labs-journey__eyebrow">
-                CHALLENGE STUDIO · VERSION {{ vm.versionNumber() }}
-              </p>
-              <h1>{{ vm.labTitle() }}</h1>
-              <p>
-                {{
-                  vm.published()
-                    ? 'Published · read only'
-                    : vm.dirty()
-                      ? 'You have unsaved changes'
-                      : 'Draft · saved'
-                }}
-              </p>
-            </div>
-            <div class="labs-journey__actions">
-              <button
-                mat-stroked-button
-                (click)="vm.saveDraft()"
-                [disabled]="!!vm.busy() || vm.published()"
-              >
-                {{ vm.busy() === 'save' ? 'Saving…' : 'Save draft' }}
-              </button>
-              <button
-                mat-stroked-button
-                (click)="vm.verifyReference()"
-                [disabled]="!!vm.busy() || vm.published()"
-              >
-                {{
-                  vm.busy() === 'verify'
-                    ? 'Running tests…'
-                    : 'Verify solution'
-                }}
-              </button>
-              <button
-                mat-flat-button
-                (click)="vm.publishDraft()"
-                [disabled]="!!vm.busy() || vm.published()"
-              >
-                {{
-                  vm.busy() === 'publish'
-                    ? 'Verifying & publishing…'
-                    : 'Publish'
-                }}
-              </button>
-            </div>
-          </header>
           @if (vm.error()) {
             <p
               class="labs-journey__banner labs-journey__banner--error"
@@ -128,24 +109,27 @@ import { CodingLabEditorViewModel } from './coding-lab-editor.view-model';
           @if (vm.published()) {
             <p class="labs-journey__banner">
               This version is published and read only.
-              <a mat-button [routerLink]="['..']"
+              <a mat-button ngxButton surface="glass" [routerLink]="['..']"
                 >Return to overview to start the next version</a
               >
             </p>
           }
+          <div class="lab-editor__switch" role="group" aria-label="Studio panels"><button mat-button [attr.aria-pressed]="pane() === 'editor'" (click)="pane.set('editor')">Editor</button><button mat-button [attr.aria-pressed]="pane() === 'checks'" (click)="pane.set('checks')">Publish checks</button></div>
           <div class="lab-editor__workspace">
+            <div class="lab-editor__authoring" [class.lab-editor__hidden]="pane() !== 'editor'">
+              <nav class="lab-editor__tabs" aria-label="Authoring sections">
+                @for (label of sections; track $index) { <button mat-button type="button" [attr.aria-pressed]="section() === $index" (click)="section.set($index)">{{ label }}</button> }
+              </nav>
+              <ngx-labs-panel [heading]="sections[section()]" [eyebrow]="'CODING LABS / VERSION ' + vm.versionNumber()" background="grid" [resetKey]="section()">
             <form [formGroup]="vm.form">
-              <mat-tab-group
-                animationDuration="0ms"
-                [preserveContent]="true"
-              >
-                <mat-tab label="1. Problem"
+
+                <div [hidden]="section() !== 0"
                   ><ngx-editor-problem [form]="vm.form"
-                /></mat-tab>
-                <mat-tab label="2. Code"
+                /></div>
+                <div [hidden]="section() !== 1"
                   ><ngx-editor-code [form]="vm.form"
-                /></mat-tab>
-                <mat-tab label="3. Test cases"
+                /></div>
+                <div [hidden]="section() !== 2"
                   ><ngx-editor-tests
                     [disabled]="!!vm.busy() || vm.published()"
                     [form]="vm.form"
@@ -160,14 +144,19 @@ import { CodingLabEditorViewModel } from './coding-lab-editor.view-model';
                         $event.errors
                       )
                     "
-                /></mat-tab>
-                <mat-tab label="4. Learner preview"
+                /></div>
+                <div [hidden]="section() !== 3"
                   ><ngx-editor-preview
                     [value]="vm.preview()"
                     [title]="vm.labTitle()"
-                /></mat-tab>
-              </mat-tab-group>
+                    [language]="vm.form.controls.language.value"
+                /></div>
+
             </form>
+              </ngx-labs-panel>
+            </div>
+            <ngx-labs-panel heading="Publish checks" eyebrow="CODING LABS / VERIFICATION" shape="beveled" tone="secondary" [class.lab-editor__hidden]="pane() !== 'checks'">
+            <details [open]="!vm.verification()"><summary>Publish checklist</summary>
             <aside class="lab-editor__checklist">
               <p class="labs-journey__eyebrow">PUBLISH CHECKLIST</p>
               <h2>Make it teachable.</h2>
@@ -194,238 +183,81 @@ import { CodingLabEditorViewModel } from './coding-lab-editor.view-model';
                   <p>tests passed · {{ run.durationMs }} ms</p>
                 </div>
               }
-            </aside>
+            </aside></details>
+            <ngx-verification-results [verification]="vm.verification()" />
+            @if (!vm.verification()) { <p class="labs-journey__muted">Verify your solution to see per-test results here.</p> }
+            </ngx-labs-panel>
           </div>
-          <ngx-verification-results
-            [verification]="vm.verification()"
-          />
         }
       </div>
     </section>
   `,
-  styles: [
-    `
-      :host {
-        display: block;
-        min-width: 0;
-        color: var(--mat-sys-on-surface);
-      }
-      .labs-journey__page {
-        display: flex;
-        justify-content: center;
-        padding: 0 16px;
-      }
-      .labs-journey__wrapper {
-        flex: 0 1 clamp(480px, 70vw, 1400px);
-        min-width: 0;
-        max-width: 100%;
-        box-sizing: border-box;
-        padding: 28px 0 64px;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 24px;
-        align-content: start;
-      }
-      .labs-journey__page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
-      }
-      .labs-journey__page-header > div {
-        min-width: 0;
-        flex: 1 1 280px;
-      }
-      h1 {
-        margin: 6px 0 12px;
-        font-size: clamp(1.65rem, 2.5vw, 2.2rem);
-        line-height: 1.25;
-        overflow-wrap: anywhere;
-      }
-      h2 {
-        margin: 0 0 12px;
-        font-size: 1.3rem;
-        line-height: 1.4;
-      }
-      p {
-        line-height: 1.6;
-      }
-      .labs-journey__eyebrow {
-        margin: 0;
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        color: var(--mat-sys-primary);
-        text-transform: uppercase;
-      }
-      .labs-journey__actions {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .labs-journey__state {
-        min-height: 180px;
-        display: grid;
-        place-content: center;
-        justify-items: center;
-        text-align: center;
-        gap: 12px;
-        padding: 24px;
-      }
-      .labs-journey__state h2,
-      .labs-journey__state p {
-        margin: 0;
-      }
-      .labs-journey__error {
-        color: var(--mat-sys-error);
-      }
-      .labs-journey__banner {
-        padding: 16px 20px;
-        border-radius: 12px;
-        margin: 0;
-        background: var(--mat-sys-secondary-container);
-        color: var(--mat-sys-on-secondary-container);
-      }
-      .labs-journey__banner.labs-journey__banner--error {
-        background: var(--mat-sys-error-container);
-        color: var(--mat-sys-on-error-container);
-      }
-      :where(a, button, summary, textarea):focus-visible {
-        outline: 2px solid var(--mat-sys-primary);
-        outline-offset: 4px;
-      }
-      @media (max-width: 700px) {
-        .labs-journey__wrapper {
-          padding-top: 20px;
-          gap: 20px;
-        }
-        .labs-journey__page-header {
-          align-items: flex-start;
-        }
-      }
-      .labs-journey__wrapper > * {
-        min-width: 0;
-      }
-      .labs-journey__particle-header h1 {
-        font-size: 1.85rem;
-        font-weight: 100;
-        margin: 1.7rem 1rem;
-      }
-      .labs-journey__particle-header-action-bar {
-        position: sticky;
-        top: 56px;
-        height: 56px;
-        z-index: 5;
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        background: var(--mat-sys-primary);
-        align-items: center;
-        a,
-        button {
-          color: var(--mat-sys-on-primary);
-          background: var(--mat-sys-primary);
-          margin: 0 12px;
-        }
-      }
-      :host {
-        display: block;
-      }
-      .lab-editor__editor-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 24px;
-        padding: 20px 0;
-      }
-      h2 {
-        margin: 0;
-        font-size: 1.4rem;
-      }
-      .labs-journey__eyebrow {
-        font-size: 0.7rem;
-        letter-spacing: 0.12em;
-        color: var(--mat-sys-primary);
-        font-weight: 600;
-      }
-      .labs-journey__actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .lab-editor__workspace {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 240px;
-        gap: 24px;
-        align-items: start;
-      }
-      .lab-editor__workspace form {
-        min-width: 0;
-        border: 1px solid var(--mat-sys-outline-variant);
-        border-radius: 16px;
-        overflow: hidden;
-      }
-      .lab-editor__checklist {
-        border-radius: 16px;
-        background: var(--mat-sys-surface-container-low);
-        padding: 24px;
-        line-height: 1.7;
-      }
-      .lab-editor__checklist h2 {
-        line-height: 1.3;
-      }
-      .lab-editor__checklist p {
-        font-size: 0.875rem;
-      }
-      .labs-journey__banner {
-        border-radius: 10px;
-        padding: 16px;
-        background: var(--mat-sys-secondary-container);
-        color: var(--mat-sys-on-secondary-container);
-      }
-      .labs-journey__error {
-        background: var(--mat-sys-error-container);
-        color: var(--mat-sys-on-error-container);
-      }
-      .labs-journey__state {
-        min-height: 200px;
-        display: grid;
-        place-content: center;
-        gap: 16px;
-      }
-      .lab-editor__result--failed {
-        color: var(--mat-sys-error);
-      }
-      .lab-editor__run-summary strong {
-        font-size: 2rem;
-      }
-      @media (max-width: 1000px) {
-        .lab-editor__workspace {
-          grid-template-columns: 1fr;
-        }
-        .lab-editor__checklist {
-          display: block;
-        }
-        .lab-editor__editor-header {
-          align-items: start;
-          flex-wrap: wrap;
-        }
-      }
-      @media (max-width: 1250px) {
-        .lab-editor__workspace {
-          grid-template-columns: minmax(0, 1fr);
-        }
-      }
-      .lab-editor__editor-header > .labs-journey__actions {
-        flex: 0 1 auto;
-      }
-    `,
-  ],
+  styles: [`
+    :host { display: block; min-width: 0; background: var(--ngx-color-canvas); color: var(--ngx-color-text); }
+    ngx-action-bar { --ngx-action-bar-top: var(--labs-toolbar-top, 96px); }
+    .labs-journey__page { padding: 1rem; }
+    .labs-journey__wrapper { display: grid; grid-template-columns: minmax(0, 1fr); min-height: 0; gap: 1rem; }
+    .labs-journey__panel { min-width: 0; padding: 0; }
+    .labs-journey__section-header, .labs-journey__actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    h1, h2, h3, p { overflow-wrap: anywhere; }
+    h2 { font-family: var(--ngx-font-heading); font-size: 1rem; margin: 0 0 8px; }
+    h3 { font-size: 0.85rem; }
+    p { font-size: 0.85rem; line-height: 1.6; }
+    .labs-journey__muted, .labs-journey__subtitle { color: var(--ngx-color-muted); }
+    .labs-journey__eyebrow { color: var(--ngx-color-primary); font: var(--ngx-font-label); font-size: 0.65rem; }
+    .labs-journey__state { display: grid; justify-items: center; text-align: center; gap: 8px; padding: 16px; }
+    .labs-journey__banner { margin: 0; padding: 8px 12px; border-left: 2px solid var(--ngx-color-primary); background: var(--ngx-color-surface-high); }
+    .labs-journey__banner--error { color: var(--ngx-color-error); border-color: currentColor; }
+    .labs-journey__form { display: grid; gap: 12px; }
+    .labs-journey__meta-grid, .labs-journey__value-grid, .labs-journey__row-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .labs-journey__metadata { margin: 12px 0; }
+    .labs-journey__metadata dt { color: var(--ngx-color-muted); font-size: 0.7rem; }
+    .labs-journey__metadata dd { margin: 4px 0 12px; overflow-wrap: anywhere; }
+    mat-form-field { width: 100%; min-width: 0; }
+    details { border: 1px solid var(--ngx-color-border); padding: 8px; margin-block: 8px; min-width: 0; }
+    summary { cursor: pointer; font-size: 0.85rem; }
+    .labs-journey__prose { overflow-wrap: anywhere; line-height: 1.65; }
+    :where(a, button, summary):focus-visible { outline: 2px solid var(--ngx-color-primary); outline-offset: 2px; }
+    @media (max-width: 720px) {
+      ngx-action-bar { --ngx-action-bar-top: var(--labs-toolbar-top, 76px); }
+      ngx-action-bar a, ngx-action-bar button { min-width: 0; padding-inline: 8px; font-size: 0.7rem; }
+      .labs-journey__page { padding: 0.5rem; }
+      .labs-journey__meta-grid, .labs-journey__value-grid, .labs-journey__row-2 { grid-template-columns: minmax(0, 1fr); }
+    }
+    .lab-editor__editor-page { display: flex; flex-direction: column; gap: 8px; }
+    .lab-editor__workspace { display: grid; grid-template-columns: minmax(0, 1fr) 320px; grid-template-rows: minmax(0, 1fr); gap: 1rem; flex: 1; min-height: 0; }
+    .lab-editor__authoring { min-width: 0; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+    .lab-editor__tabs { display: flex; gap: 4px; flex-wrap: wrap; padding-bottom: 8px; }
+    .lab-editor__tabs button { min-height: 36px; font-size: 0.75rem; }
+    .lab-editor__tabs button[aria-pressed='true'] { color: var(--ngx-color-primary); background: var(--ngx-color-surface-high); }
+    .lab-editor__checklist { font-size: 0.75rem; }
+    .lab-editor__checklist h2 { font-size: 1rem; }
+    .lab-editor__run-summary { color: var(--ngx-color-success); }
+    .lab-editor__result--failed { color: var(--ngx-color-error); }
+    .lab-editor__switch { display: none; }
+    @media (max-width: 1100px) {
+      .lab-editor__workspace { grid-template-columns: minmax(0, 1fr); }
+      .lab-editor__switch { display: flex; }
+      .lab-editor__switch button[aria-pressed='true'] { background: var(--ngx-color-surface-high); }
+      .lab-editor__authoring, .lab-editor__workspace > ngx-labs-panel { grid-column: 1; grid-row: 1; }
+      .lab-editor__hidden { display: none; }
+    }
+    @media (max-width: 720px) {
+      .lab-editor__back-label { display: none; }
+      ngx-action-bar { gap: 4px; }
+      .labs-journey__actions { gap: 4px; }
+      .labs-journey__actions button { font-size: 0.65rem; padding-inline: 6px; }
+      .lab-editor__tabs { gap: 0; padding-bottom: 4px; }
+      .lab-editor__tabs button { padding-inline: 6px; font-size: 0.65rem; flex: 1; }
+    }
+
+  `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodingLabEditorPage {
+  readonly pane = signal<'editor' | 'checks'>('editor');
+  readonly section = signal(0);
+  readonly sections = ['Problem', 'Code', 'Test cases', 'Learner preview'];
   readonly vm = inject(CodingLabEditorViewModel);
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload(event: BeforeUnloadEvent) {

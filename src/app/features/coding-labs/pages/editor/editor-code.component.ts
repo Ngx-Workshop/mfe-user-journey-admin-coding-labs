@@ -26,7 +26,7 @@ import type { EditorForm } from './editor-form';
         <div class="lab-editor__fields">
           <mat-form-field appearance="outline"
             ><mat-label>Language</mat-label>
-            <mat-select formControlName="language"
+            <mat-select panelClass="ngx-design-system-overlay ngx-select-panel" formControlName="language"
               ><mat-option value="typescript">TypeScript</mat-option
               ><mat-option value="javascript"
                 >JavaScript</mat-option
@@ -80,10 +80,11 @@ import type { EditorForm } from './editor-form';
   `,
   styles: [
     `
+      .labs-journey__panel > * { min-width: 0; max-width: 100%; }
       :host {
         display: block;
         min-width: 0;
-        color: var(--mat-sys-on-surface);
+        color: var(--ngx-color-text);
       }
       h3 {
         font-size: 1rem;
@@ -93,8 +94,8 @@ import type { EditorForm } from './editor-form';
         line-height: 1.6;
       }
       .labs-journey__panel {
-        padding: 24px;
-        border: 1px solid var(--mat-sys-outline-variant);
+        padding: 0;
+        border: 1px solid var(--ngx-color-border);
         border-radius: 16px;
         min-width: 0;
       }
@@ -103,12 +104,12 @@ import type { EditorForm } from './editor-form';
         min-width: 0;
       }
       :where(a, button, summary, textarea):focus-visible {
-        outline: 2px solid var(--mat-sys-primary);
+        outline: 2px solid var(--ngx-color-primary);
         outline-offset: 4px;
       }
       @media (max-width: 700px) {
         .labs-journey__panel {
-          padding: 16px;
+          padding: 8px;
         }
       }
       :host {
@@ -126,7 +127,7 @@ import type { EditorForm } from './editor-form';
         font-weight: 400;
         padding: 4px 10px;
         border-radius: 20px;
-        background: var(--mat-sys-surface-container-high);
+        background: var(--ngx-color-surface-high);
       }
       .lab-editor__fields {
         display: flex;
@@ -137,13 +138,14 @@ import type { EditorForm } from './editor-form';
         border: 0;
         border-radius: 0;
         display: grid;
-        gap: 16px;
-        padding: 24px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+        padding: 0;
       }
       .labs-journey__panel > p {
         margin: 0;
         line-height: 1.6;
-        color: var(--mat-sys-on-surface-variant);
+        color: var(--ngx-color-muted);
       }
       .labs-journey__panel > button {
         justify-self: start;
@@ -152,11 +154,11 @@ import type { EditorForm } from './editor-form';
         box-sizing: border-box;
         width: 100%;
         resize: vertical;
-        padding: 16px;
-        border: 1px solid var(--mat-sys-outline);
+        padding: 8px;
+        border: 1px solid var(--ngx-color-border);
         border-radius: 8px;
-        background: var(--mat-sys-surface);
-        color: var(--mat-sys-on-surface);
+        background: var(--ngx-color-surface);
+        color: var(--ngx-color-text);
         font: inherit;
         line-height: 1.6;
       }
@@ -166,7 +168,7 @@ import type { EditorForm } from './editor-form';
       }
       @media (max-width: 600px) {
         .labs-journey__panel {
-          padding: 16px;
+          padding: 8px;
         }
       }
       .lab-editor__fields > * {

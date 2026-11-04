@@ -1,3 +1,4 @@
+import { NgxButton } from '@tmdjr/ngx-workshop-design-system';
 import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -14,7 +15,7 @@ import { entityId } from '../utils/lab-entity.utils';
 @Component({
   selector: 'ngx-version-list',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, DatePipe],
+  imports: [NgxButton,MatButtonModule, MatIconModule, DatePipe],
   template: `
     @if (versions.length === 0) {
       <p class="version-list__empty">
@@ -58,7 +59,7 @@ import { entityId } from '../utils/lab-entity.utils';
                 </td>
                 <td class="labs-journey__table-actions">
                   <button
-                    mat-button
+                    mat-button ngxButton surface="glass"
                     type="button"
                     (click)="view.emit(version)"
                   >
@@ -66,7 +67,7 @@ import { entityId } from '../utils/lab-entity.utils';
                   </button>
                   @if (version.isDraft && !readOnly) {
                     <button
-                      mat-button
+                      mat-button ngxButton surface="glass"
                       type="button"
                       (click)="editDraft.emit(version)"
                     >
@@ -86,20 +87,20 @@ import { entityId } from '../utils/lab-entity.utils';
       :host {
         display: block;
         min-width: 0;
-        color: var(--mat-sys-on-surface);
+        color: var(--ngx-color-text);
       }
       p {
         line-height: 1.6;
       }
       :where(a, button, summary, textarea):focus-visible {
-        outline: 2px solid var(--mat-sys-primary);
+        outline: 2px solid var(--ngx-color-primary);
         outline-offset: 4px;
       }
       .labs-journey__table-wrap {
         min-width: 0;
         overflow-x: auto;
-        border: 1px solid var(--mat-sys-outline-variant);
-        border-radius: 12px;
+        border: 1px solid var(--ngx-color-border);
+        border-radius: 0;
       }
       table {
         border-collapse: collapse;
@@ -107,22 +108,22 @@ import { entityId } from '../utils/lab-entity.utils';
       }
       th,
       td {
-        padding: 16px;
+        padding: 8px;
         text-align: left;
-        border-bottom: 1px solid var(--mat-sys-outline-variant);
+        border-bottom: 1px solid var(--ngx-color-border);
         vertical-align: middle;
       }
       th {
         font-size: 0.8rem;
         font-weight: 600;
-        color: var(--mat-sys-on-surface-variant);
-        background: var(--mat-sys-surface-container-low);
+        color: var(--ngx-color-muted);
+        background: var(--ngx-color-surface);
       }
       tr:last-child td {
         border-bottom: 0;
       }
       tbody tr:hover {
-        background: var(--mat-sys-surface-container-low);
+        background: var(--ngx-color-surface);
       }
       .labs-journey__table-actions {
         white-space: nowrap;
@@ -130,7 +131,7 @@ import { entityId } from '../utils/lab-entity.utils';
       @media (max-width: 700px) {
         th,
         td {
-          padding: 12px;
+          padding: 8px;
         }
       }
     `,

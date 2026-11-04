@@ -1,3 +1,4 @@
+import { NgxButton } from '@tmdjr/ngx-workshop-design-system';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -18,7 +19,7 @@ import { MatInputModule } from '@angular/material/input';
 @Component({
   selector: 'ngx-hints-editor',
   standalone: true,
-  imports: [
+  imports: [NgxButton,
     FormsModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -71,7 +72,7 @@ import { MatInputModule } from '@angular/material/input';
         </div>
       }
       <button
-        mat-stroked-button
+        mat-stroked-button ngxButton surface="outline"
         type="button"
         (click)="addHint()"
         [disabled]="disabled"

@@ -22,7 +22,7 @@ The backend owns persistence, validation, authorization, hidden tests, verificat
 | pages/editor/editor-*.component.ts | Focused form views and learner-only preview snapshots |
 | pages/editor/verification-results.component.ts | Input-only verification rendering |
 | components/comparator-editor.component.ts and json-value-editor.component.ts | Input/output-only test field views |
-| @tmdjr/coding-labs-contracts@0.0.6 | Published DTO types; imported through the feature model adapter |
+| @tmdjr/coding-labs-contracts@0.0.8 | Published DTO types; imported through the feature model adapter |
 | testing/app/features/coding-labs | Specs mirroring src/app, separate from application sources |
 | src/environments | Development API versus production gateway |
 
@@ -55,7 +55,7 @@ Each page provides its own view model. Form controls, unsaved state, navigation,
 
 The store selects/reuses or creates drafts and saves before verification/publication. Typed command events report the saved hash even if a later verification fails. Publication uses the save response's hash. Form views receive the original typed controls and emit intentions; they do not inject the store or HTTP client. Preview receives only prompt, starter code and sample tests, with explicit signal updates after server patches and form edits. All components use OnPush.
 
-Templates and component-scoped Sass are inline in each component TypeScript file. Authored classes use BEM; responsive layout, theme tokens, focus indicators and the centered clamp wrapper are retained. Rules needed by a view are colocated with it. Avoid imported style-string arrays in this webpack pipeline: browser verification found the same generated constant substituted for distinct array entries. Explicit subscriptions to the shared Angular signal API avoid the shell/remote injection-context mismatch observed with an implicitly injected toSignal bridge. Federation sharing configuration remains unchanged.
+Templates and component-scoped Sass are inline in each component TypeScript file. Authored classes use BEM; responsive layout, theme tokens and focus indicators are retained; bounded shared panels replace the centered clamp wrapper. Rules needed by a view are colocated with it. Avoid imported style-string arrays in this webpack pipeline: browser verification found the same generated constant substituted for distinct array entries. Explicit subscriptions to the shared Angular signal API avoid the shell/remote injection-context mismatch observed with an implicitly injected toSignal bridge. Federation sharing configuration remains unchanged.
 
 Use `npm run check:architecture` to check the HTTP/store boundary, inline views, BEM syntax and the advisory 230-line guideline. Component length is advisory; formatting can place components above that guideline. Unreachable seed CRUD demonstrations were removed.
 
@@ -69,7 +69,7 @@ corresponding files in `src/app`. Specs import application modules;
 application modules do not import the testing tree.
 
 `models/coding-labs.models.ts` adapts the published `@tmdjr/coding-labs-contracts`
-0.0.6 types with local entity/query types. Generated contract copies and their
+0.0.8 types with local entity/query types. Generated contract copies and their
 local generation command have been removed. The existing `openapi.json` remains
 a reference snapshot, not a compilation or type-generation input.
 
@@ -80,3 +80,9 @@ under `src/app/features/coding-labs`; page-only views/models stay beside their
 page, reusable views live under `components`, stateless adapters under `api`, and
 singleton orchestration under `state`. Tests mirror the responsibility folders.
 The app entry files and external integration contracts are preserved.
+
+## Shared design system — 2026-11-04
+
+Routed pages own NgxActionBar toolbars and the ngx-design-system scope. Catalogue has compact linked rows beside filters; overview has details/history panels. Creation and snapshot content are bounded panels. Studio navigation preserves mounted typed forms/CodeMirror editors, while publish checks/results scroll independently. Small screens switch panels. Static code and JSON use NgxCodeBlock; editable code stays in the CodeMirror CVA. Markdown still uses Angular sanitization without a trust bypass.
+
+`components/labs-panel.component.ts`, `labs-viewport.directive.ts` and the local viewport helper measure actual remaining space and release observers on destruction. The panel wrapper composes public NgxPanel inputs/projection and scopes compact mobile Material card-element spacing. No sibling runtime dependency or design-system private CSS class dependency is introduced. MVVM, contracts and service-owned execution/publication are unchanged; the verification notice names its new panel.

@@ -35,10 +35,10 @@ import { CodemirrorEditorComponent } from './codemirror-editor/codemirror-editor
         display: block;
         margin-bottom: 6px;
         font-size: 0.85rem;
-        color: var(--mat-sys-on-surface-variant);
+        color: var(--ngx-color-muted);
       }
       .json-value-editor__error {
-        color: var(--mat-sys-error);
+        color: var(--ngx-color-error);
         font-size: 0.8rem;
         margin: 6px 0 0;
       }
