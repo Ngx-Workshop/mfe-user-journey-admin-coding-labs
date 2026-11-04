@@ -25,14 +25,15 @@
     "@angular/material": "21.1.0",
     "@angular/platform-browser": "21.1.0",
     "@angular/router": "21.1.0",
-    "marked": "^17.0.6",
-    "rxjs": "7.8.2",
-    "tslib": "2.8.1",
     "@codemirror/commands": "6.10.2",
     "@codemirror/state": "6.5.4",
     "@codemirror/view": "6.39.15",
     "@codemirror/search": "6.6.0",
-    "@codemirror/language": "6.12.2"
+    "@codemirror/language": "6.12.2",
+    "@tmdjr/ngx-workshop-design-system": "21.0.10",
+    "marked": "^17.0.6",
+    "rxjs": "7.8.2",
+    "tslib": "2.8.1"
   },
   "devDependencies": {
     "@angular/build": "^21.1.0",
