@@ -30,7 +30,7 @@
     "@codemirror/view": "6.39.15",
     "@codemirror/search": "6.6.0",
     "@codemirror/language": "6.12.2",
-    "@tmdjr/ngx-workshop-design-system": "21.0.10",
+    "@tmdjr/ngx-workshop-design-system": "21.0.11",
     "marked": "^17.0.6",
     "rxjs": "7.8.2",
     "tslib": "2.8.1"
